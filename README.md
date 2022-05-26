@@ -26,6 +26,9 @@ $ curl -sfL https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/inst
 $ chmod +x githooks
 $ mv githooks <folder-in-your-PATH>
 ```
+## Demo Usage:
+
+![image](https://github.com/xiabai84/githooks/blob/main/doc/githooks-demo.gif)
 
 ## 1.1 Initialization
 When you use `githooks` for the first time, you need to set up the usage by calling
