@@ -1,0 +1,60 @@
+version: 2
+
+project_name: githooks
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: githooks
+    main: .
+    binary: githooks
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/stefan-niemeyer/githooks/buildinfo.version={{.Version}}
+      - -X github.com/stefan-niemeyer/githooks/buildinfo.gitCommit={{.Commit}}
+      - -X github.com/stefan-niemeyer/githooks/buildinfo.buildDate={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - UNLICENSE
+      - commit-msg
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^style:'
+      - '^ci:'
+
+release:
+  github:
+    owner: stefan-niemeyer
+    name: githooks
+  prerelease: auto
+  name_template: "{{.ProjectName}} v{{.Version}}"

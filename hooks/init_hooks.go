@@ -1,0 +1,64 @@
+package hooks
+
+import (
+	"fmt"
+	"os"
+	"text/template"
+
+	"github.com/manifoldco/promptui"
+	"github.com/stefan-niemeyer/githooks/buildinfo"
+	"github.com/stefan-niemeyer/githooks/config"
+	"github.com/stefan-niemeyer/githooks/types"
+)
+
+func InitHooks() (types.GitHookConfig, error) {
+	ghConfig := types.GitHookConfig{
+		Version:    buildinfo.GetBuildInfo().Version,
+		Workspaces: []types.Workspace{},
+	}
+
+	if err := os.MkdirAll(config.Default.HookDir, config.ExecutableFilePermission); err != nil {
+		return ghConfig, fmt.Errorf("creating hook dir: %w", err)
+	}
+	if err := os.MkdirAll(config.Default.HookConfigDir, config.ExecutableFilePermission); err != nil {
+		return ghConfig, fmt.Errorf("creating hook config dir: %w", err)
+	}
+
+	if _, err := os.Stat(config.Default.GitConfigPath); err != nil {
+		f, err := os.Create(config.Default.GitConfigPath)
+		if err != nil {
+			return ghConfig, fmt.Errorf("creating git config: %w", err)
+		}
+		defer f.Close()
+		if err := os.Chmod(config.Default.GitConfigPath, config.ConfigFilePermission); err != nil {
+			return ghConfig, fmt.Errorf("setting git config permissions: %w", err)
+		}
+		fmt.Println(promptui.IconGood+"  Created file", config.Default.GitConfigPath)
+	}
+
+	if _, err := os.Stat(config.Default.CommitMsgPath); err != nil {
+		tmpl, err := template.New(".githooks").Parse(config.CommitMsg)
+		if err != nil {
+			return ghConfig, fmt.Errorf("parsing commit-msg template: %w", err)
+		}
+		f, err := os.Create(config.Default.CommitMsgPath)
+		if err != nil {
+			return ghConfig, fmt.Errorf("creating commit-msg: %w", err)
+		}
+		defer f.Close()
+		if err := os.Chmod(config.Default.CommitMsgPath, config.ExecutableFilePermission); err != nil {
+			return ghConfig, fmt.Errorf("setting commit-msg permissions: %w", err)
+		}
+		if err := tmpl.Execute(f, &ghConfig); err != nil {
+			return ghConfig, fmt.Errorf("executing commit-msg template: %w", err)
+		}
+		fmt.Println(promptui.IconGood+"  Created file", config.Default.CommitMsgPath)
+	}
+
+	if err := WriteGitHooksConfig(&ghConfig); err != nil {
+		return ghConfig, err
+	}
+	fmt.Println(promptui.IconGood+"  Created file", config.Default.GithooksConfigPath)
+
+	return ghConfig, nil
+}
