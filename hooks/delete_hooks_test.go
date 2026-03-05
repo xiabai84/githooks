@@ -32,7 +32,9 @@ func setupDeleteTest(t *testing.T) (*types.GitHookConfig, func()) {
 	// Create workspace git config files
 	for _, ws := range ghConfig.Workspaces {
 		configPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(ws.Name))
-		os.WriteFile(configPath, []byte("[core]\n    hooksPath=~/.githooks\n"), 0644)
+		if err := os.WriteFile(configPath, []byte("[core]\n    hooksPath=~/.githooks\n"), 0644); err != nil {
+			t.Fatalf("failed to write workspace config: %v", err)
+		}
 	}
 
 	// Build .gitconfig content with includeIf blocks
@@ -42,7 +44,9 @@ func setupDeleteTest(t *testing.T) (*types.GitHookConfig, func()) {
 		gitConfigContent.WriteString("[includeIf \"gitdir:" + ws.Folder + "\"]\n")
 		gitConfigContent.WriteString("    path = " + config.GitHooksFolder + "/" + config.GitHooksConfigFolder + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(ws.Name) + "\n")
 	}
-	os.WriteFile(config.Default.GitConfigPath, []byte(gitConfigContent.String()), 0644)
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(gitConfigContent.String()), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
 
 	return ghConfig, cleanup
 }

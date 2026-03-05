@@ -98,7 +98,9 @@ func TestInitHooks_DoesNotOverwriteExistingFiles(t *testing.T) {
 	defer cleanup()
 
 	// Create git config with custom content before init
-	os.WriteFile(config.Default.GitConfigPath, []byte("custom content"), 0644)
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte("custom content"), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
 
 	_, err := InitHooks()
 	if err != nil {
