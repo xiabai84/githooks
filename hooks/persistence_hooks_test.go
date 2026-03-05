@@ -3,6 +3,7 @@ package hooks
 import (
 	"encoding/json"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/stefan-niemeyer/githooks/config"
@@ -53,6 +54,9 @@ func TestWriteAndReadGitHooksConfig(t *testing.T) {
 }
 
 func TestWriteGitHooksConfig_FilePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file permissions are not supported on Windows")
+	}
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 

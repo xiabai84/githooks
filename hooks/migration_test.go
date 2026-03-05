@@ -26,7 +26,9 @@ func TestMigrateGitHooksConfig_MigratesLegacyLog(t *testing.T) {
 	legacyContent := `{"Project":"alpha","JiraName":"ALPHA","WorkDir":"~/alpha/"}
 {"Project":"beta","JiraName":"BETA","WorkDir":"~/beta/"}
 `
-	os.WriteFile(config.Default.GithooksLogPath, []byte(legacyContent), 0644)
+	if err := os.WriteFile(config.Default.GithooksLogPath, []byte(legacyContent), 0644); err != nil {
+		t.Fatalf("failed to write legacy log: %v", err)
+	}
 
 	err := MigrateGitHooksConfig()
 	if err != nil {
@@ -58,7 +60,9 @@ func TestMigrateGitHooksConfig_InvalidJSON(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 
-	os.WriteFile(config.Default.GithooksLogPath, []byte("not valid json\n"), 0644)
+	if err := os.WriteFile(config.Default.GithooksLogPath, []byte("not valid json\n"), 0644); err != nil {
+		t.Fatalf("failed to write legacy log: %v", err)
+	}
 
 	err := MigrateGitHooksConfig()
 	if err == nil {

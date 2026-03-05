@@ -3,6 +3,7 @@ package hooks
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -119,6 +120,9 @@ func TestDeleteSelectedWorkspace_UpdatesGitConfig(t *testing.T) {
 }
 
 func TestDeleteSelectedWorkspace_GitConfigPermission(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file permissions are not supported on Windows")
+	}
 	ghConfig, cleanup := setupDeleteTest(t)
 	defer cleanup()
 

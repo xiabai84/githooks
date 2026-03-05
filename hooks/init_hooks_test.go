@@ -2,6 +2,7 @@ package hooks
 
 import (
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -40,6 +41,9 @@ func TestInitHooks_CreatesAllFiles(t *testing.T) {
 }
 
 func TestInitHooks_GitConfigPermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file permissions are not supported on Windows")
+	}
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 
@@ -58,6 +62,9 @@ func TestInitHooks_GitConfigPermissions(t *testing.T) {
 }
 
 func TestInitHooks_CommitMsgIsExecutable(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file permissions are not supported on Windows")
+	}
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 
