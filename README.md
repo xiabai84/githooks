@@ -52,25 +52,30 @@ BREAKING CHANGE: /api/auth/login now requires client_id parameter
 
 ### Allowed Types
 
-| Type | Purpose |
-|---|---|
-| `feat` | New feature for the user |
-| `fix` | Bug fix |
-| `docs` | Documentation changes only |
-| `style` | Formatting, whitespace — no logic change |
-| `refactor` | Code restructuring without behavior change |
-| `perf` | Performance improvement |
-| `test` | Adding or correcting tests |
-| `build` | Build system or external dependency changes |
-| `ci` | CI/CD pipeline configuration |
-| `chore` | Maintenance tasks (dependency updates, configs) |
-| `revert` | Reverts a previous commit |
+| Type | Purpose | Version Bump |
+|---|---|---|
+| `feat` | New feature for the user | Minor (`0.X.0`) |
+| `fix` | Bug fix | Patch (`0.0.X`) |
+| `docs` | Documentation changes only | Patch (`0.0.X`) |
+| `style` | Formatting, whitespace — no logic change | — |
+| `refactor` | Code restructuring without behavior change | Patch (`0.0.X`) |
+| `perf` | Performance improvement | Patch (`0.0.X`) |
+| `test` | Adding or correcting tests | — |
+| `build` | Build system or external dependency changes | Patch (`0.0.X`) |
+| `ci` | CI/CD pipeline configuration | — |
+| `chore` | Maintenance tasks (dependency updates, configs) | Patch (`0.0.X`) |
+| `revert` | Reverts a previous commit | Patch (`0.0.X`) |
 
-Append `!` before the colon to indicate a breaking change:
+Append `!` before the colon or add a `BREAKING CHANGE:` footer to indicate a breaking change.
+Any type with `!` or a breaking change footer triggers a **Major** (`X.0.0`) version bump.
 
 ```
 feat(ABC-123)!: redesign authentication API
 ```
+
+> **Semantic Versioning summary:** Given `MAJOR.MINOR.PATCH` — a breaking change increments MAJOR, a new feature increments MINOR, and all other releasable changes increment PATCH. Types marked `—` do not trigger a release on their own.
+
+> **Why `docs` and `chore` trigger a patch release:** Documentation is bundled into the release archive alongside the binary, so updates to README or guides produce a different artifact. Likewise, `chore` commits often update dependencies or configuration that can affect the shipped result. In contrast, `style`, `test`, and `ci` changes never alter the distributed binary or bundled files, so they do not warrant a new release.
 
 ## Hook Behavior
 
