@@ -7,8 +7,7 @@ Semantic Versioning:
   Major (X.0.0) - breaking change (! or BREAKING CHANGE footer)
   Minor (0.X.0) - feat
   Patch (0.0.X) - fix, docs, refactor, perf, build, chore, revert
-
-Types style, test, and ci do not trigger a version bump.
+  No bump (0.0.0) - style, test, and ci
 
 Usage:
   python bump-version.py 1.0.0 "feat(ABC-123): add dashboard"
