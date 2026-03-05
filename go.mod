@@ -1,4 +1,4 @@
-module github.com/stefan-niemeyer/githooks
+module github.com/xiabai84/githooks
 
 go 1.22
 

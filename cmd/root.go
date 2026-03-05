@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/stefan-niemeyer/githooks/hooks"
+	"github.com/xiabai84/githooks/hooks"
 
 	"github.com/spf13/cobra"
 )

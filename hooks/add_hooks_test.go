@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stefan-niemeyer/githooks/config"
+	"github.com/xiabai84/githooks/config"
 )
 
 func TestCheckConfigFiles_AllExist(t *testing.T) {

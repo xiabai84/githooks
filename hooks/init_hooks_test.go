@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stefan-niemeyer/githooks/config"
+	"github.com/xiabai84/githooks/config"
 )
 
 func TestInitHooks_CreatesAllFiles(t *testing.T) {

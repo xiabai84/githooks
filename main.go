@@ -1,6 +1,6 @@
 package main
 
-import "github.com/stefan-niemeyer/githooks/cmd"
+import "github.com/xiabai84/githooks/cmd"
 
 func main() {
 	cmd.Execute()

@@ -22,9 +22,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/stefan-niemeyer/githooks/buildinfo.version={{.Version}}
-      - -X github.com/stefan-niemeyer/githooks/buildinfo.gitCommit={{.Commit}}
-      - -X github.com/stefan-niemeyer/githooks/buildinfo.buildDate={{.Date}}
+      - -X github.com/xiabai84/githooks/buildinfo.version={{.Version}}
+      - -X github.com/xiabai84/githooks/buildinfo.gitCommit={{.Commit}}
+      - -X github.com/xiabai84/githooks/buildinfo.buildDate={{.Date}}
 
 archives:
   - id: default

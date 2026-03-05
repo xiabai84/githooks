@@ -156,8 +156,8 @@ To embed version information into the binary:
 
 ```bash
 go build -ldflags "-s -w \
-  -X github.com/stefan-niemeyer/githooks/buildinfo.version=$(git describe --tags) \
-  -X github.com/stefan-niemeyer/githooks/buildinfo.gitCommit=$(git rev-parse HEAD)" \
+  -X github.com/xiabai84/githooks/buildinfo.version=$(git describe --tags) \
+  -X github.com/xiabai84/githooks/buildinfo.gitCommit=$(git rev-parse HEAD)" \
   -o githooks .
 ```
 

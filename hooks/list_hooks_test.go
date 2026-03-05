@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stefan-niemeyer/githooks/types"
+	"github.com/xiabai84/githooks/types"
 )
 
 func TestGetWorkspaceIndex_MatchesCwd(t *testing.T) {

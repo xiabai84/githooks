@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/stefan-niemeyer/githooks/buildinfo"
-	"github.com/stefan-niemeyer/githooks/config"
-	"github.com/stefan-niemeyer/githooks/types"
+	"github.com/xiabai84/githooks/buildinfo"
+	"github.com/xiabai84/githooks/config"
+	"github.com/xiabai84/githooks/types"
 )
 
 // legacyHook represents the old log-based config format, used only for migration.

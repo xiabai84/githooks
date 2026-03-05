@@ -7,8 +7,8 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/stefan-niemeyer/githooks/hooks"
-	"github.com/stefan-niemeyer/githooks/types"
+	"github.com/xiabai84/githooks/hooks"
+	"github.com/xiabai84/githooks/types"
 )
 
 var addCmd = &cobra.Command{

@@ -7,8 +7,8 @@ import (
 	"text/template"
 
 	"github.com/manifoldco/promptui"
-	"github.com/stefan-niemeyer/githooks/config"
-	"github.com/stefan-niemeyer/githooks/types"
+	"github.com/xiabai84/githooks/config"
+	"github.com/xiabai84/githooks/types"
 )
 
 func AddWorkspace(newWorkspace *types.Workspace) error {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/stefan-niemeyer/githooks/buildinfo"
+	"github.com/xiabai84/githooks/buildinfo"
 )
 
 var versionCmd = &cobra.Command{

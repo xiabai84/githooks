@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/stefan-niemeyer/githooks/types"
+	"github.com/xiabai84/githooks/types"
 )
 
 func GetWorkspaceIndex(workspaces []types.Workspace) (int, error) {

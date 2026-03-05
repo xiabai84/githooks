@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stefan-niemeyer/githooks/config"
+	"github.com/xiabai84/githooks/config"
 )
 
 func TestMigrateGitHooksConfig_NoLogFile(t *testing.T) {
