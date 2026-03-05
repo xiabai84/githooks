@@ -14,7 +14,9 @@ func setupTestConfig(t *testing.T) func() {
 	tmpDir := t.TempDir()
 	origDefault := config.Default
 	config.Default = config.NewPaths(tmpDir)
-	os.MkdirAll(config.Default.HookConfigDir, 0755)
+	if err := os.MkdirAll(config.Default.HookConfigDir, 0755); err != nil {
+		t.Fatalf("failed to create hook config dir: %v", err)
+	}
 	return func() { config.Default = origDefault }
 }
 

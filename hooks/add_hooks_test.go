@@ -11,9 +11,15 @@ func TestCheckConfigFiles_AllExist(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 
-	os.WriteFile(config.Default.GitConfigPath, []byte{}, 0644)
-	os.WriteFile(config.Default.CommitMsgPath, []byte{}, 0755)
-	os.WriteFile(config.Default.GithooksConfigPath, []byte("{}"), 0644)
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte{}, 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	if err := os.WriteFile(config.Default.CommitMsgPath, []byte{}, 0755); err != nil {
+		t.Fatalf("failed to write commit-msg: %v", err)
+	}
+	if err := os.WriteFile(config.Default.GithooksConfigPath, []byte("{}"), 0644); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
 
 	err := CheckConfigFiles()
 	if err != nil {

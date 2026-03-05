@@ -15,9 +15,13 @@ func TestAddWorkspace_CreatesAllArtifacts(t *testing.T) {
 	defer cleanup()
 
 	// Create prerequisite: .gitconfig and initial config
-	os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644)
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
 	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
-	WriteGitHooksConfig(initialConfig)
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
 
 	ws := &types.Workspace{
 		Name:         "TestProject",
@@ -71,9 +75,13 @@ func TestAddWorkspace_MultipleWorkspaces(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
 
-	os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644)
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
 	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
-	WriteGitHooksConfig(initialConfig)
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
 
 	ws1 := &types.Workspace{Name: "Alpha", ProjectKeyRE: "ALPHA", Folder: "~/alpha/"}
 	ws2 := &types.Workspace{Name: "Beta", ProjectKeyRE: "BETA", Folder: "~/beta/"}
@@ -100,7 +108,9 @@ func TestAddWorkspace_MissingGitConfig(t *testing.T) {
 
 	// Write githooks.json but NOT .gitconfig
 	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
-	WriteGitHooksConfig(initialConfig)
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
 
 	ws := &types.Workspace{Name: "Fail", ProjectKeyRE: "FAIL", Folder: "~/fail/"}
 	err := AddWorkspace(ws)
