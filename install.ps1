@@ -6,12 +6,12 @@
     Downloads the latest githooks release for Windows and extracts it
     to the current directory.
 .EXAMPLE
-    irm https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.ps1 | iex
+    irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
 #>
 
 $ErrorActionPreference = "Stop"
 
-$repo = "stefan-niemeyer/githooks"
+$repo = "xiabai84/githooks"
 $arch = if ([Environment]::Is64BitOperatingSystem) {
     if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
 } else {

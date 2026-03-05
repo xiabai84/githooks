@@ -59,7 +59,7 @@ Open PowerShell and run:
 
 ```powershell
 # Download and extract the latest release
-irm https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
 
 # Move to a directory in your PATH
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\bin" | Out-Null
@@ -83,7 +83,7 @@ if ($currentPath -notlike "*$binPath*") {
 Open Git Bash and run:
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
 
 # Create ~/bin if needed and move the binary there
 mkdir -p ~/bin
@@ -94,7 +94,7 @@ Git Bash automatically includes `~/bin` in the PATH.
 
 ### Option C: Manual Installation
 
-1. Go to the [Releases](https://github.com/stefan-niemeyer/githooks/releases) page
+1. Go to the [Releases](https://github.com/xiabai84/githooks/releases) page
 2. Download `githooks-<version>-windows-amd64.zip`
 3. Extract `githooks.exe`
 4. Move it to a directory in your PATH (e.g. `C:\Users\<you>\bin\`)
@@ -381,7 +381,7 @@ policy or "blocked by antivirus" errors:
 2. Allow the file if it was downloaded from the official GitHub releases
 3. Or build from source to avoid unsigned binary issues:
    ```powershell
-   git clone https://github.com/stefan-niemeyer/githooks.git
+   git clone https://github.com/xiabai84/githooks.git
    cd githooks
    go build -o githooks.exe .
    ```

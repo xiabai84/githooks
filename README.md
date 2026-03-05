@@ -107,7 +107,7 @@ and footers are preserved during rewriting.
 ### Option A: Download Pre-built Binary (Linux/macOS)
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
 sudo mv githooks /usr/local/bin/
 ```
 
@@ -118,19 +118,19 @@ The install script automatically detects your operating system and architecture.
 **PowerShell (recommended):**
 
 ```powershell
-irm https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
 ```
 
 **Git Bash / MSYS2:**
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/stefan-niemeyer/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
 mv githooks.exe ~/bin/
 ```
 
 **Manual download:**
 
-1. Download the latest `githooks-*-windows-amd64.zip` from the [Releases](https://github.com/stefan-niemeyer/githooks/releases) page
+1. Download the latest `githooks-*-windows-amd64.zip` from the [Releases](https://github.com/xiabai84/githooks/releases) page
 2. Extract `githooks.exe` to a directory in your PATH
 
 > **Note:** The commit-msg hook script requires Bash. On Windows, this is provided
@@ -142,7 +142,7 @@ For detailed Windows setup instructions including IDE integration and troublesho
 ### Option C: Build from Source
 
 ```bash
-git clone https://github.com/stefan-niemeyer/githooks.git
+git clone https://github.com/xiabai84/githooks.git
 cd githooks
 go build -o githooks .
 ```

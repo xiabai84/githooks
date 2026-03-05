@@ -2,7 +2,7 @@
 
 set -e
 
-REPO="stefan-niemeyer/githooks"
+REPO="xiabai84/githooks"
 BINARY="githooks"
 OSTYPE=""
 ARCH=""
