@@ -380,6 +380,11 @@ and that the Jira ticket follows the format `PROJECT-NUMBER` (e.g. `ABC-123`).
 The branch name must contain a Jira ticket pattern (e.g. `feature/ABC-123-description`).
 The hook extracts tickets matching the configured project keys.
 
+## Acknowledgements
+
+This project is forked from [stefan-niemeyer/githooks](https://github.com/stefan-niemeyer/githooks).
+Thank you to Stefan Niemeyer for the original work that laid the foundation for this tool.
+
 ## License
 
 This project is released under the [Unlicense](UNLICENSE).
