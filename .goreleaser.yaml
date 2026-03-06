@@ -51,7 +51,6 @@ changelog:
       - '^refactor:'
       - '^test:'
       - '^ci:'
-      - '^chore:'
 
 release:
   github:

@@ -548,8 +548,8 @@ Result: major bump (1.2.3 → 2.0.0)
 |---|---|---|
 | 1 (highest) | `!` or `BREAKING CHANGE:` | Major |
 | 2 | `feat` | Minor |
-| 3 | `fix`, `perf`, `revert`, `build` | Patch |
-| — | `docs`, `style`, `refactor`, `test`, `ci`, `chore` | None (no release) |
+| 3 | `fix`, `perf`, `revert`, `build`, `chore` | Patch |
+| — | `docs`, `style`, `refactor`, `test`, `ci` | None (no release) |
 
 ### PowerShell Equivalent
 

@@ -63,12 +63,12 @@ BREAKING CHANGE: /api/auth/login now requires client_id parameter
 | `perf` | Performance improvement | Patch (`0.0.X`) |
 | `revert` | Reverts a previous commit | Patch (`0.0.X`) |
 | `build` | Build system or external dependency changes | Patch (`0.0.X`) |
+| `chore` | Maintenance tasks (dependency updates, configs) | Patch (`0.0.X`) |
 | `docs` | Documentation changes only | — |
 | `style` | Formatting, whitespace — no logic change | — |
 | `refactor` | Code restructuring without behavior change | — |
 | `test` | Adding or correcting tests | — |
 | `ci` | CI/CD pipeline configuration | — |
-| `chore` | Maintenance tasks (dependency updates, configs) | — |
 
 Append `!` before the colon or add a `BREAKING CHANGE:` footer to indicate a breaking change.
 Any type with `!` or a breaking change footer triggers a **Major** (`X.0.0`) version bump.
@@ -79,7 +79,7 @@ feat(PAY-123)!: redesign authentication API
 
 > **Semantic Versioning summary:** Given `MAJOR.MINOR.PATCH` — a breaking change increments MAJOR, a new feature increments MINOR, and all other releasable changes increment PATCH. Types marked `—` do not trigger a release on their own.
 
-> **Why this classification?** This follows the [semantic-release](https://github.com/semantic-release/semantic-release) convention used across the industry. Only changes that affect the **shipped artifact** trigger a release: `fix` corrects user-facing bugs, `perf` improves user-facing performance, `revert` undoes a change that may have introduced issues, and `build` can affect the binary through dependency or toolchain updates. Types like `docs`, `refactor`, `style`, `test`, `ci`, and `chore` do not alter the distributed binary, so they do not warrant a new release.
+> **Why this classification?** Only changes that affect the **shipped artifact** trigger a release: `fix` corrects user-facing bugs, `perf` improves user-facing performance, `revert` undoes a change that may have introduced issues, `build` can affect the binary through toolchain updates, and `chore` often updates dependencies that change the compiled binary or Docker image. Types like `docs`, `refactor`, `style`, `test`, and `ci` do not alter the distributed artifact, so they do not warrant a new release.
 
 ## Hook Behavior
 

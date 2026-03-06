@@ -8,8 +8,8 @@
 
       Major   (X.0.0) - breaking change (! or BREAKING CHANGE footer)
       Minor   (0.X.0) - feat
-      Patch   (0.0.X) - fix, perf, revert, build
-      No bump         - docs, style, refactor, test, ci, chore
+      Patch   (0.0.X) - fix, perf, revert, build, chore
+      No bump         - docs, style, refactor, test, ci
 
     Modes:
       Single message:
@@ -62,7 +62,7 @@ begin {
     $pattern = "^($commitTypes)(\([^)]*\))?(!)?: .+"
 
     $minorTypes = @("feat")
-    $patchTypes = @("fix", "perf", "revert", "build")
+    $patchTypes = @("fix", "perf", "revert", "build", "chore")
 
     $bumpPriority = @{ "none" = 0; "patch" = 1; "minor" = 2; "major" = 3 }
     $maxBump = "none"
