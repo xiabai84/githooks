@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bump a semantic version based on a Conventional Commits message.
+"""Bump a semantic version based on Conventional Commits.
 
 Determines the version bump according to Conventional Commits and
 Semantic Versioning:
@@ -7,54 +7,69 @@ Semantic Versioning:
   Major (X.0.0) - breaking change (! or BREAKING CHANGE footer)
   Minor (0.X.0) - feat
   Patch (0.0.X) - fix, docs, refactor, perf, build, chore, revert
-  No bump (0.0.0) - style, test, and ci
+  No bump       - style, test, ci
 
-Usage:
-  python bump-version.py 1.0.0 "feat(ABC-123): add dashboard"
-  # Output: 1.1.0
+Modes:
+  Single message:
+    python bump-version.py 1.0.0 'feat(ABC-123): add dashboard'
+    # Output: 1.1.0
 
-  python bump-version.py 2.3.1 "fix(ABC-456)!: critical auth fix"
-  # Output: 3.0.0
+  Auto mode (reads git log since last tag):
+    python bump-version.py --auto
+    # Detects current version from latest git tag, scans all commits,
+    # and outputs the next version.
 
-  git log -1 --format=%s | python bump-version.py 1.2.3
-  # Reads commit message from stdin
+  Pipe multiple messages via stdin:
+    git log v1.0.0..HEAD --format=%s | python bump-version.py 1.0.0
+    # Scans all lines and applies the highest-priority bump.
 """
 
 import re
+import subprocess
 import sys
 
-COMMIT_TYPES = r"feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
-CONV_RE = re.compile(rf"^({COMMIT_TYPES})(\([^)]*\))?(!)?: .+")
+COMMIT_TYPES = "feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+CONV_RE = re.compile(r"^(" + COMMIT_TYPES + r")(\([^)]*\))?(!)?: .+")
 
+BUMP_PRIORITY = {"major": 3, "minor": 2, "patch": 1, "none": 0}
 MINOR_TYPES = {"feat"}
 PATCH_TYPES = {"fix", "docs", "refactor", "perf", "build", "chore", "revert"}
 NO_RELEASE_TYPES = {"style", "test", "ci"}
 
 
-def bump_version(version: str, message: str) -> str:
-    match = CONV_RE.match(message)
+def classify_message(message: str) -> str:
+    """Classify a commit message and return the bump level."""
+    match = CONV_RE.match(message.strip())
     if not match:
-        print(f"Error: commit message does not follow Conventional Commits format: {message}", file=sys.stderr)
-        sys.exit(1)
+        return "none"
 
     commit_type = match.group(1)
     bang = match.group(3)
     is_breaking = bang == "!" or "BREAKING CHANGE:" in message
 
     if is_breaking:
-        bump = "major"
+        return "major"
     elif commit_type in MINOR_TYPES:
-        bump = "minor"
+        return "minor"
     elif commit_type in PATCH_TYPES:
-        bump = "patch"
-    elif commit_type in NO_RELEASE_TYPES:
-        print(version)
-        print(f"No version bump for type '{commit_type}'.", file=sys.stderr)
-        sys.exit(0)
-    else:
-        print(f"Error: unknown commit type '{commit_type}'.", file=sys.stderr)
-        sys.exit(1)
+        return "patch"
+    return "none"
 
+
+def highest_bump(messages: list[str]) -> str:
+    """Return the highest-priority bump across all messages."""
+    max_bump = "none"
+    for msg in messages:
+        bump = classify_message(msg)
+        if BUMP_PRIORITY[bump] > BUMP_PRIORITY[max_bump]:
+            max_bump = bump
+        if max_bump == "major":
+            break  # can't go higher
+    return max_bump
+
+
+def apply_bump(version: str, bump: str) -> str:
+    """Apply a bump level to a semantic version string."""
     major, minor, patch = (int(p) for p in version.split("."))
 
     if bump == "major":
@@ -64,13 +79,81 @@ def bump_version(version: str, message: str) -> str:
     elif bump == "patch":
         patch += 1
 
-    print(f"{major}.{minor}.{patch}")
+    return f"{major}.{minor}.{patch}"
+
+
+def git_command(*args: str) -> str:
+    """Run a git command and return stdout."""
+    result = subprocess.run(
+        ["git"] + list(args),
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"Error: git {' '.join(args)} failed: {result.stderr.strip()}", file=sys.stderr)
+        sys.exit(1)
+    return result.stdout.strip()
+
+
+def get_last_tag() -> str:
+    """Get the most recent version tag."""
+    result = subprocess.run(
+        ["git", "describe", "--tags", "--abbrev=0", "--match", "v*"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        return "v0.0.0"
+    return result.stdout.strip()
+
+
+def auto_bump():
+    """Detect version from git tags, scan commits, and print next version."""
+    last_tag = get_last_tag()
+    version = last_tag.lstrip("v")
+
+    if not re.match(r"^\d+\.\d+\.\d+$", version):
+        print(f"Error: invalid tag format '{last_tag}'. Expected vMAJOR.MINOR.PATCH", file=sys.stderr)
+        sys.exit(1)
+
+    log_range = f"{last_tag}..HEAD"
+    log_output = git_command("log", log_range, "--format=%s")
+
+    if not log_output:
+        print(version)
+        print("No new commits since last tag.", file=sys.stderr)
+        sys.exit(0)
+
+    messages = log_output.split("\n")
+    bump = highest_bump(messages)
+
+    if bump == "none":
+        print(version)
+        print(f"No release-worthy commits found ({len(messages)} commits scanned).", file=sys.stderr)
+        sys.exit(0)
+
+    new_version = apply_bump(version, bump)
+    print(new_version)
+
+    # Summary to stderr
+    type_counts: dict[str, int] = {}
+    for msg in messages:
+        b = classify_message(msg)
+        type_counts[b] = type_counts.get(b, 0) + 1
+    summary = ", ".join(f"{k}: {v}" for k, v in sorted(type_counts.items()) if k != "none")
+    print(f"{last_tag} → v{new_version} ({bump} bump, {len(messages)} commits: {summary})", file=sys.stderr)
 
 
 def main():
+    # Auto mode
+    if len(sys.argv) >= 2 and sys.argv[1] == "--auto":
+        auto_bump()
+        return
+
+    # Manual mode
     if len(sys.argv) < 2:
-        print("Usage: bump-version.py <version> [message]", file=sys.stderr)
-        print('  echo "feat: ..." | bump-version.py 1.0.0', file=sys.stderr)
+        print("Usage:", file=sys.stderr)
+        print("  bump-version.py <version> [message]     Single commit", file=sys.stderr)
+        print("  bump-version.py <version>               Pipe commits via stdin", file=sys.stderr)
+        print("  bump-version.py --auto                  Auto-detect from git", file=sys.stderr)
         sys.exit(1)
 
     version = sys.argv[1]
@@ -78,19 +161,29 @@ def main():
         print(f"Error: invalid version format '{version}'. Expected MAJOR.MINOR.PATCH", file=sys.stderr)
         sys.exit(1)
 
+    # Single message as argument
     if len(sys.argv) >= 3:
-        message = sys.argv[2]
+        messages = [sys.argv[2]]
+    # Multiple messages from stdin
     elif not sys.stdin.isatty():
-        message = sys.stdin.readline().strip()
+        messages = [line.strip() for line in sys.stdin if line.strip()]
     else:
         print("Error: no commit message provided. Pass as argument or pipe via stdin.", file=sys.stderr)
         sys.exit(1)
 
-    if not message:
-        print("Error: empty commit message.", file=sys.stderr)
+    if not messages:
+        print("Error: no commit messages provided.", file=sys.stderr)
         sys.exit(1)
 
-    bump_version(version, message)
+    bump = highest_bump(messages)
+
+    if bump == "none":
+        print(version)
+        print(f"No version bump ({len(messages)} commits scanned).", file=sys.stderr)
+        sys.exit(0)
+
+    new_version = apply_bump(version, bump)
+    print(new_version)
 
 
 if __name__ == "__main__":
