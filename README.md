@@ -326,6 +326,17 @@ Jira project key RegEx: (ALPHA|BETA|GAMMA)
 
 This accepts commits like `feat(ALPHA-1): ...`, `fix(BETA-42): ...`, or `chore(GAMMA-7): ...`.
 
+**Automatic merging:** If you add a new workspace with a folder that already has a workspace
+configured, githooks automatically merges the Jira project keys into a single regex pattern.
+For example, adding `BETA` to a workspace that already tracks `ALPHA` produces `(ALPHA|BETA)` —
+no duplicate configuration is created.
+
+```bash
+githooks add   # workspace "MyProject", key ALPHA, folder ~/projects/shared/
+githooks add   # workspace "Other",     key BETA,  folder ~/projects/shared/
+# Result: single workspace "MyProject" with key (ALPHA|BETA)
+```
+
 Alternatively, create separate workspaces with more specific folder paths.
 Git resolves `includeIf` directives using the longest matching path, so a workspace
 at `~/projects/alpha/` takes precedence over a workspace at `~/projects/`.
