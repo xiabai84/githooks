@@ -106,6 +106,9 @@ download_and_extract() {
   else
     echo "Move githooks to a directory in your PATH, for example:"
     echo "  sudo mv githooks /usr/local/bin/"
+    echo ""
+    echo "Or install without sudo:"
+    echo "  mkdir -p ~/.local/bin && mv githooks ~/.local/bin/"
   fi
 }
 
