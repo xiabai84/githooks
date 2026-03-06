@@ -35,6 +35,9 @@ if ! [[ "$FIRST_LINE" =~ $CONV_RE ]]; then
   echo >&2 ""
   echo >&2 "  Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
   echo >&2 "  Example: feat(ABC-123): add user authentication"
+  echo >&2 ""
+  echo >&2 "  Tip: In zsh, use single quotes for messages containing '!' to avoid history expansion:"
+  echo >&2 "    git commit -m 'feat(ABC-123)!: breaking change'"
   exit 1
 fi
 
@@ -98,6 +101,9 @@ if [[ -z "$MSG_TICKET" ]]; then
     echo >&2 "ERROR: Commit message must include a Jira ticket."
   fi
   echo >&2 "  Example: feat(ABC-123): add user authentication"
+  echo >&2 ""
+  echo >&2 "  Tip: In zsh, use single quotes for messages containing '!' to avoid history expansion:"
+  echo >&2 "    git commit -m 'feat(ABC-123)!: breaking change'"
   exit 1
 fi
 `
