@@ -6,7 +6,7 @@
     Downloads the latest githooks release for Windows and extracts it
     to the current directory.
 .EXAMPLE
-    irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
+    irm https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.ps1 | iex
 #>
 
 $ErrorActionPreference = "Stop"

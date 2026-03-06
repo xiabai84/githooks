@@ -17,7 +17,8 @@ Modes:
   Auto mode (reads git log since last tag):
     python bump-version.py --auto
     # Detects current version from latest git tag, scans all commits,
-    # and outputs the next version.
+    # and outputs the next version to stdout (summary to stderr).
+    # CI usage: VERSION=$(python bump-version.py --auto)
 
   Pipe multiple messages via stdin:
     git log v1.0.0..HEAD --format=%s | python bump-version.py 1.0.0

@@ -35,8 +35,8 @@ archives:
         format: zip
     files:
       - README.md
-      - UNLICENSE
-      - commit-msg
+      - LICENSE
+      - scripts/commit-msg
 
 checksum:
   name_template: checksums.txt

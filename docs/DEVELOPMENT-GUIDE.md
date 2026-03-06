@@ -40,7 +40,7 @@ to manage commit messages, branch workflows, and software releases.
 ### 1. Install githooks
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.sh | sh
 ```
 
 ### 2. Initialize and Add Your Workspace
@@ -59,7 +59,7 @@ Every Git repository under that folder is now protected by the commit-msg hook.
 
 ### 3. Place bump-version.py in Your Project
 
-Copy `bump-version.py` into the root of your project repository so all team
+Copy `scripts/bump-version.py` into the root of your project repository so all team
 members and the CI pipeline have access to it.
 
 ## Daily Development Workflow
@@ -246,6 +246,12 @@ python bump-version.py --auto
 # Output: 1.3.0
 # stderr: v1.2.0 → v1.3.0 (minor bump, 5 commits: minor: 2, patch: 3)
 ```
+
+> **CI usage:** The version is printed to **stdout**, the summary to **stderr**.
+> Capture just the version in a pipeline:
+> ```bash
+> VERSION=$(python bump-version.py --auto)
+> ```
 
 ### Bump Priority
 

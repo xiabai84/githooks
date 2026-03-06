@@ -13,7 +13,8 @@ ensuring consistent commit messages across your team.
   - [Option A: Download Pre-built Binary (Linux/macOS)](#option-a-download-pre-built-binary-linuxmacos)
   - [Option B: Windows Installation](#option-b-windows-installation)
   - [Option C: Build from Source](#option-c-build-from-source)
-  - [Option D: Single Repository (No CLI)](#option-d-single-repository-no-cli)
+  - [Option D: Docker (CI Pipelines)](#option-d-docker-ci-pipelines)
+  - [Option E: Single Repository (No CLI)](#option-e-single-repository-no-cli)
 - [Getting Started](#getting-started)
 - [Managing Workspaces](#managing-workspaces)
   - [Adding a Workspace](#adding-a-workspace)
@@ -115,7 +116,7 @@ and footers are preserved during rewriting.
 ### Option A: Download Pre-built Binary (Linux/macOS)
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.sh | sh
 ```
 
 The install script automatically detects your operating system and architecture,
@@ -133,13 +134,13 @@ downloads the binary, and installs it to `~/.local/bin/`.
 **PowerShell (recommended):**
 
 ```powershell
-irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.ps1 | iex
 ```
 
 **Git Bash / MSYS2:**
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.sh | sh
 mv githooks.exe ~/bin/
 ```
 
@@ -179,22 +180,57 @@ Verify the installation:
 githooks version
 ```
 
-### Option D: Single Repository (No CLI)
+### Option D: Docker (CI Pipelines)
+
+Use the Docker image to run githooks or `bump-version.py` in CI without local installation:
+
+```bash
+# Build the image
+docker build -t githooks .
+
+# Run githooks commands
+docker run --rm githooks version
+
+# Use bump-version.py inside the container
+docker run --rm -v "$(pwd):/repo" -w /repo githooks \
+  sh -c "python3 /usr/local/bin/bump-version.py --auto"
+```
+
+**GitHub Actions example:**
+
+```yaml
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build githooks image
+        run: docker build -t githooks .
+      - name: Calculate next version
+        run: |
+          VERSION=$(docker run --rm -v "$(pwd):/repo" -w /repo githooks \
+            sh -c "python3 /usr/local/bin/bump-version.py --auto")
+          echo "Next version: $VERSION"
+```
+
+### Option E: Single Repository (No CLI)
 
 If you only need the hook in a single repository without installing the CLI:
 
 ```bash
 # Install in the current repository
-./install-jira-git-hook
+./scripts/install-jira-git-hook
 
 # Install in multiple repositories at once
-./install-jira-git-hook repo1 repo2 repo3
+./scripts/install-jira-git-hook repo1 repo2 repo3
 
 # Restrict to specific Jira projects
-./install-jira-git-hook --projects=PAY,MOB
+./scripts/install-jira-git-hook --projects=PAY,MOB
 
 # Override existing hooks without prompting
-./install-jira-git-hook --yes
+./scripts/install-jira-git-hook --yes
 ```
 
 Full usage:
@@ -467,11 +503,11 @@ You can use the included helper scripts to calculate the next version automatica
 
 ```bash
 # Python
-python bump-version.py 1.2.3 'feat(MOB-123): add new command'
+python scripts/bump-version.py 1.2.3 'feat(MOB-123): add new command'
 # Output: 1.3.0
 
 # PowerShell
-.\bump-version.ps1 -Version 1.2.3 -Message "feat(MOB-123): add new command"
+.\scripts\bump-version.ps1 -Version 1.2.3 -Message "feat(MOB-123): add new command"
 # Output: 1.3.0
 ```
 
@@ -479,23 +515,32 @@ python bump-version.py 1.2.3 'feat(MOB-123): add new command'
 
 ```bash
 # Python
-python bump-version.py --auto
+python scripts/bump-version.py --auto
 # Output: 1.3.0
+# stderr: v1.2.0 → v1.3.0 (minor bump, 5 commits: minor: 2, patch: 3)
 
 # PowerShell
-.\bump-version.ps1 -Auto
+.\scripts\bump-version.ps1 -Auto
 # Output: 1.3.0
+# stderr: v1.2.0 → v1.3.0 (minor bump, 5 commits: minor: 2, patch: 3)
 ```
+
+> **CI usage:** The version is printed to **stdout**, the summary to **stderr**.
+> In a pipeline, capture just the version:
+> ```bash
+> VERSION=$(python scripts/bump-version.py --auto)
+> # or PowerShell: $VERSION = .\scripts\bump-version.ps1 -Auto
+> ```
 
 **Pipe multiple messages via stdin:**
 
 ```bash
 # Python
-git log v1.2.3..HEAD --format=%s | python bump-version.py 1.2.3
+git log v1.2.3..HEAD --format=%s | python scripts/bump-version.py 1.2.3
 # Output: highest bump across all commits
 
 # PowerShell
-git log v1.2.3..HEAD --format=%s | .\bump-version.ps1 -Version 1.2.3
+git log v1.2.3..HEAD --format=%s | .\scripts\bump-version.ps1 -Version 1.2.3
 # Output: highest bump across all commits
 ```
 

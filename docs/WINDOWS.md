@@ -59,7 +59,7 @@ Open PowerShell and run:
 
 ```powershell
 # Download and extract the latest release
-irm https://raw.githubusercontent.com/xiabai84/githooks/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.ps1 | iex
 
 # Move to a directory in your PATH
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\bin" | Out-Null
@@ -83,7 +83,7 @@ if ($currentPath -notlike "*$binPath*") {
 Open Git Bash and run:
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
+curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/scripts/install.sh | sh
 
 # Create ~/bin if needed and move the binary there
 mkdir -p ~/bin

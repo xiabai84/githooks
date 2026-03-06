@@ -19,7 +19,8 @@
       Auto mode (reads git log since last tag):
         .\bump-version.ps1 -Auto
         # Detects current version from latest git tag, scans all commits,
-        # and outputs the next version.
+        # and outputs the next version to stdout (summary to stderr).
+        # CI usage: $VERSION = .\bump-version.ps1 -Auto
 
       Pipe multiple messages via stdin:
         git log v1.0.0..HEAD --format=%s | .\bump-version.ps1 -Version 1.0.0

@@ -1,0 +1,7 @@
+.git
+.github
+.claude
+.goreleaser.yaml
+docs
+*.md
+LICENSE
