@@ -45,12 +45,17 @@ DESC="${BASH_REMATCH[5]}"
 
 # Parse Jira ticket from branch name
 parse_git_branch() {
+  local branch
+  branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ -z "$branch" ]; then
+    return
+  fi
   if [ -n "$PROJECTS" ]; then
-    git rev-parse --abbrev-ref HEAD 2>/dev/null | \
+    echo "$branch" | \
         grep --ignore-case --extended-regexp --only-matching --regexp="\<${PROJECTS}-[[:digit:]]+\>" | \
         tr '[:lower:]' '[:upper:]'
   else
-    git rev-parse --abbrev-ref HEAD 2>/dev/null | \
+    echo "$branch" | \
         grep --extended-regexp --only-matching --regexp='\<[[:alpha:]][[:alnum:]]*-[[:digit:]]+\>' | \
         tr '[:lower:]' '[:upper:]'
   fi

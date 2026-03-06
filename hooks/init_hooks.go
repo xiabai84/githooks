@@ -36,7 +36,7 @@ func InitHooks() (types.GitHookConfig, error) {
 		fmt.Println(promptui.IconGood+"  Created file", config.Default.GitConfigPath)
 	}
 
-	if _, err := os.Stat(config.Default.CommitMsgPath); err != nil {
+	{
 		tmpl, err := template.New(".githooks").Parse(config.CommitMsg)
 		if err != nil {
 			return ghConfig, fmt.Errorf("parsing commit-msg template: %w", err)
@@ -52,7 +52,7 @@ func InitHooks() (types.GitHookConfig, error) {
 		if err := tmpl.Execute(f, &ghConfig); err != nil {
 			return ghConfig, fmt.Errorf("executing commit-msg template: %w", err)
 		}
-		fmt.Println(promptui.IconGood+"  Created file", config.Default.CommitMsgPath)
+		fmt.Println(promptui.IconGood+"  Updated file", config.Default.CommitMsgPath)
 	}
 
 	if err := WriteGitHooksConfig(&ghConfig); err != nil {
