@@ -495,7 +495,8 @@ based on the commits since the last release:
 |---|---|---|
 | Breaking change (`!` or `BREAKING CHANGE:`) | Major | `1.2.3` → `2.0.0` |
 | New feature (`feat`) | Minor | `1.2.3` → `1.3.0` |
-| Bug fix, docs, refactor, etc. | Patch | `1.2.3` → `1.2.4` |
+| fix, perf, chore, etc. | Patch | `1.2.3` → `1.2.4` |
+| docs, style, refactor, etc. | None | `1.2.3` → `1.2.4` |
 
 You can use the included helper scripts to calculate the next version automatically:
 
