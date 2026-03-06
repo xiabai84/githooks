@@ -17,6 +17,7 @@ ensuring consistent commit messages across your team.
 - [Getting Started](#getting-started)
 - [Managing Workspaces](#managing-workspaces)
   - [Adding a Workspace](#adding-a-workspace)
+  - [Updating a Workspace](#updating-a-workspace)
   - [Listing Workspaces](#listing-workspaces)
   - [Deleting a Workspace](#deleting-a-workspace)
   - [Uninstalling](#uninstalling)
@@ -262,6 +263,20 @@ Interactively creates a new workspace. After confirmation, githooks:
 - Appends the workspace to `~/.githooks/config/githooks.json`
 - Creates `~/.githooks/config/gitconfig-<name>` with the hooks path and Jira project key
 - Appends an `includeIf` directive to `~/.gitconfig`
+
+### Updating a Workspace
+
+```bash
+githooks update
+```
+
+Interactively select a workspace to modify. You can change:
+- **Name** — renames the workspace and its gitconfig file
+- **Jira project key** — updates the accepted ticket patterns (e.g. `ALPHA` → `(ALPHA|BETA)`)
+- **Folder** — moves the workspace to a different directory path
+
+Each field is pre-filled with the current value — press Enter to keep it unchanged.
+After confirming, githooks updates all related config files automatically.
 
 ### Listing Workspaces
 
