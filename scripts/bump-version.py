@@ -6,8 +6,8 @@ Semantic Versioning:
 
   Major (X.0.0) - breaking change (! or BREAKING CHANGE footer)
   Minor (0.X.0) - feat
-  Patch (0.0.X) - fix, docs, refactor, perf, build, chore, revert
-  No bump       - style, test, ci
+  Patch (0.0.X) - fix, perf, revert, build
+  No bump       - docs, style, refactor, test, ci, chore
 
 Modes:
   Single message:
@@ -34,8 +34,8 @@ CONV_RE = re.compile(r"^(" + COMMIT_TYPES + r")(\([^)]*\))?(!)?: .+")
 
 BUMP_PRIORITY = {"major": 3, "minor": 2, "patch": 1, "none": 0}
 MINOR_TYPES = {"feat"}
-PATCH_TYPES = {"fix", "docs", "refactor", "perf", "build", "chore", "revert"}
-NO_RELEASE_TYPES = {"style", "test", "ci"}
+PATCH_TYPES = {"fix", "perf", "revert", "build"}
+NO_RELEASE_TYPES = {"docs", "style", "refactor", "test", "ci", "chore"}
 
 
 def classify_message(message: str) -> str:
