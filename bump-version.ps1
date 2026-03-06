@@ -119,9 +119,13 @@ begin {
             exit 1
         }
 
-        $logRange = "$lastTag..HEAD"
+        # If no real tag exists, scan all commits; otherwise scan since last tag
         try {
-            $logOutput = git log $logRange --format=%s 2>$null
+            if ($lastTag -eq "v0.0.0") {
+                $logOutput = git log --format=%s 2>$null
+            } else {
+                $logOutput = git log "$lastTag..HEAD" --format=%s 2>$null
+            }
         } catch {
             $logOutput = $null
         }

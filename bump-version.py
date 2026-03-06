@@ -114,8 +114,11 @@ def auto_bump():
         print(f"Error: invalid tag format '{last_tag}'. Expected vMAJOR.MINOR.PATCH", file=sys.stderr)
         sys.exit(1)
 
-    log_range = f"{last_tag}..HEAD"
-    log_output = git_command("log", log_range, "--format=%s")
+    # If no real tag exists, scan all commits; otherwise scan since last tag
+    if last_tag == "v0.0.0":
+        log_output = git_command("log", "--format=%s")
+    else:
+        log_output = git_command("log", f"{last_tag}..HEAD", "--format=%s")
 
     if not log_output:
         print(version)
