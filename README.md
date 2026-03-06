@@ -121,8 +121,12 @@ sudo mv githooks /usr/local/bin/
 mkdir -p ~/.local/bin && mv githooks ~/.local/bin/
 ```
 
-> **Note:** If you install to `~/.local/bin/`, make sure it is in your PATH.
-> Add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.zshrc` or `~/.bashrc` if needed.
+> **Note:** If you install to `~/.local/bin/`, make sure it is in your PATH:
+> ```bash
+> echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+> source ~/.zshrc
+> ```
+> For Bash, replace `~/.zshrc` with `~/.bashrc`.
 
 The install script automatically detects your operating system and architecture.
 
