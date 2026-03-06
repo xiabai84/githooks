@@ -26,6 +26,7 @@ ensuring consistent commit messages across your team.
   - [File Structure](#file-structure)
   - [Git Configuration](#git-configuration)
 - [Troubleshooting](#troubleshooting)
+- [Releasing a New Version](#releasing-a-new-version)
 - [License](#license)
 
 ## Commit Message Format
@@ -408,6 +409,57 @@ and that the Jira ticket follows the format `PROJECT-NUMBER` (e.g. `ABC-123`).
 
 The branch name must contain a Jira ticket pattern (e.g. `feature/ABC-123-description`).
 The hook extracts tickets matching the configured project keys.
+
+## Releasing a New Version
+
+githooks uses [GoReleaser](https://goreleaser.com/) and GitHub Actions to build and publish
+releases automatically. A new release is triggered by pushing a Git tag.
+
+### 1. Determine the Version Bump
+
+Follow the [Allowed Types](#allowed-types) table to determine the correct version bump
+based on the commits since the last release:
+
+| Change | Bump | Example |
+|---|---|---|
+| Breaking change (`!` or `BREAKING CHANGE:`) | Major | `1.2.3` → `2.0.0` |
+| New feature (`feat`) | Minor | `1.2.3` → `1.3.0` |
+| Bug fix, docs, refactor, etc. | Patch | `1.2.3` → `1.2.4` |
+
+You can use the included helper scripts to calculate the next version automatically:
+
+```bash
+# Python
+python bump-version.py 1.2.3 "feat(ABC-123): add new command"
+# Output: 1.3.0
+
+# PowerShell
+.\bump-version.ps1 -Version 1.2.3 -Message "feat(ABC-123): add new command"
+# Output: 1.3.0
+```
+
+### 2. Create and Push a Tag
+
+```bash
+git tag v1.3.0 -m "v1.3.0 - Short description of the release"
+git push origin v1.3.0
+```
+
+### 3. Verify the Release
+
+The `Release` workflow runs automatically on any `v*` tag push. It builds binaries for all
+platforms (Linux, macOS, Windows × amd64, arm64) and publishes them as a GitHub release.
+
+```bash
+# Watch the release workflow
+gh run list --repo xiabai84/githooks --limit 3
+
+# View the published release
+gh release view v1.3.0
+```
+
+The release is available at `https://github.com/xiabai84/githooks/releases/tag/v1.3.0`.
+Users running `install.sh` or `install.ps1` will automatically download the latest version.
 
 ## Acknowledgements
 
