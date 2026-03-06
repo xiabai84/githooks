@@ -46,6 +46,7 @@ $filename = $asset.name
 Write-Host "Downloading $filename ..." -ForegroundColor Cyan
 
 $tempFile = Join-Path $env:TEMP $filename
+$tempExtract = Join-Path $env:TEMP "githooks-install"
 try {
     Invoke-WebRequest -Uri $downloadUrl -OutFile $tempFile -UseBasicParsing
 } catch {
@@ -55,22 +56,26 @@ try {
 
 Write-Host "Extracting $filename ..." -ForegroundColor Cyan
 
-$extractPath = Get-Location
-Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
+if (Test-Path $tempExtract) { Remove-Item $tempExtract -Recurse -Force }
+Expand-Archive -Path $tempFile -DestinationPath $tempExtract -Force
 Remove-Item $tempFile -Force
 
-$binaryPath = Join-Path $extractPath "githooks.exe"
+$binaryPath = Join-Path $tempExtract "githooks.exe"
 if (Test-Path $binaryPath) {
+    $destPath = Get-Location
+    Copy-Item $binaryPath -Destination $destPath -Force
+    Remove-Item $tempExtract -Recurse -Force
     Write-Host ""
     Write-Host "Installation complete!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "githooks.exe is in: $extractPath"
+    Write-Host "githooks.exe is in: $destPath"
     Write-Host ""
     Write-Host "To use globally, move it to a directory in your PATH:" -ForegroundColor Yellow
     Write-Host "  Move-Item githooks.exe `$env:USERPROFILE\bin\"
     Write-Host ""
     Write-Host "Note: The commit-msg hook requires Git Bash (included with Git for Windows)."
 } else {
+    Remove-Item $tempExtract -Recurse -Force -ErrorAction SilentlyContinue
     Write-Error "Extraction succeeded but githooks.exe was not found."
     exit 1
 }

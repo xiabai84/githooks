@@ -60,12 +60,13 @@ fetch_download_url() {
 }
 
 download_and_extract() {
+  tmpdir=$(mktemp -d)
   filename="${DOWNLOAD_URL##*/}"
   echo "Downloading ${BINARY} from ${DOWNLOAD_URL} ..."
 
-  trap 'rm -f "$filename"' EXIT
+  trap 'rm -rf "$tmpdir"' EXIT
 
-  if ! curl -fsLO "$DOWNLOAD_URL"; then
+  if ! curl -fsL -o "${tmpdir}/${filename}" "$DOWNLOAD_URL"; then
     echo ""
     echo "Error: Failed to download ${filename}."
     echo "Please verify the release exists at: https://github.com/${REPO}/releases"
@@ -80,13 +81,13 @@ download_and_extract() {
       echo "Error: 'tar' is required but not found. Please install tar and try again."
       exit 1
     fi
-    tar -xzf "${filename}"
+    tar -xzf "${tmpdir}/${filename}" -C "${tmpdir}"
     ;;
   zip)
     if command -v unzip >/dev/null 2>&1; then
-      unzip -o "${filename}"
+      unzip -o "${tmpdir}/${filename}" -d "${tmpdir}"
     elif command -v powershell >/dev/null 2>&1; then
-      powershell -Command "Expand-Archive -Force '${filename}' '.'"
+      powershell -Command "Expand-Archive -Force '${tmpdir}/${filename}' '${tmpdir}'"
     else
       echo "Error: 'unzip' or 'powershell' is required to extract .zip files."
       exit 1
@@ -99,6 +100,7 @@ download_and_extract() {
   echo ""
 
   if [ "$OSTYPE" = "windows" ]; then
+    cp "${tmpdir}/${BINARY}.exe" .
     echo "Move githooks.exe to a directory in your PATH, for example:"
     echo "  move githooks.exe C:\\Users\\%USERNAME%\\bin\\"
     echo ""
@@ -106,7 +108,7 @@ download_and_extract() {
   else
     INSTALL_DIR="$HOME/.local/bin"
     mkdir -p "$INSTALL_DIR"
-    mv "${BINARY}" "$INSTALL_DIR/"
+    mv "${tmpdir}/${BINARY}" "$INSTALL_DIR/"
     echo "Installed to ${INSTALL_DIR}/${BINARY}"
     echo ""
 
