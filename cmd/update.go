@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -72,16 +71,6 @@ var updateCmd = &cobra.Command{
 
 		// Prompt for new folder
 		defaultFolder := current.Folder
-		cwd, err := os.Getwd()
-		if err == nil {
-			homeDir, err := os.UserHomeDir()
-			if err == nil && len(homeDir) != 0 {
-				cwd = strings.Replace(cwd, homeDir, "~", 1)
-			}
-			if !strings.HasSuffix(cwd, "/") {
-				cwd += "/"
-			}
-		}
 		newFolder, err := types.GetPromptInput(types.Dialog{
 			ErrorMsg: "Please enter a path to your workspace.",
 			Label:    fmt.Sprintf("Workspace folder (%s):", defaultFolder),
