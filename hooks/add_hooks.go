@@ -114,13 +114,40 @@ func previewGitConfigFile(workspace *types.Workspace) error {
 	if err != nil {
 		return fmt.Errorf("git configuration file %s doesn't exist, please setup git first", config.Default.GitConfigPath)
 	}
+	sanitized := sanitizeGitConfig(string(bContent))
 	tmpl, err := template.New("simple-hook-config").Funcs(template.FuncMap{
 		"toLower": strings.ToLower,
-	}).Parse(viewHeader + string(bContent) + config.GitConfigPatch)
+	}).Parse(viewHeader + sanitized + config.GitConfigPatch)
 	if err != nil {
 		return fmt.Errorf("parsing git config template: %w", err)
 	}
 	return tmpl.Execute(os.Stdout, workspace)
+}
+
+// sanitizeGitConfig masks sensitive values in gitconfig content before display.
+func sanitizeGitConfig(content string) string {
+	sensitiveKeys := []string{"token", "password", "secret", "credential"}
+	var result []string
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		masked := false
+		for _, key := range sensitiveKeys {
+			if strings.HasPrefix(trimmed, key+" =") || strings.HasPrefix(trimmed, key+"=") {
+				// Keep the key but mask the value
+				parts := strings.SplitN(trimmed, "=", 2)
+				if len(parts) == 2 {
+					indent := line[:len(line)-len(trimmed)]
+					result = append(result, indent+strings.TrimSpace(parts[0])+" = ********")
+					masked = true
+					break
+				}
+			}
+		}
+		if !masked {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
 }
 
 func previewWorkspaceGitConfig(workspace *types.Workspace) error {
