@@ -45,7 +45,7 @@ All commit messages must follow Conventional Commits with a Jira ticket in the s
 **Example:**
 
 ```
-feat(ABC-123): add OAuth2 login for mobile clients
+feat(PAY-123): add OAuth2 login for mobile clients
 
 - Implement token refresh flow
 - Add secure token storage
@@ -73,7 +73,7 @@ Append `!` before the colon or add a `BREAKING CHANGE:` footer to indicate a bre
 Any type with `!` or a breaking change footer triggers a **Major** (`X.0.0`) version bump.
 
 ```
-feat(ABC-123)!: redesign authentication API
+feat(PAY-123)!: redesign authentication API
 ```
 
 > **Semantic Versioning summary:** Given `MAJOR.MINOR.PATCH` — a breaking change increments MAJOR, a new feature increments MINOR, and all other releasable changes increment PATCH. Types marked `—` do not trigger a release on their own.
@@ -85,14 +85,14 @@ feat(ABC-123)!: redesign authentication API
 | Commit Message | Branch | Result |
 |---|---|---|
 | `add new feature` | any | **Rejected** — missing type prefix |
-| `[ABC-123] add feature` | any | **Rejected** — not Conventional Commits format |
+| `[PAY-123] add feature` | any | **Rejected** — not Conventional Commits format |
 | `feat: add feature` | `main` | **Rejected** — missing Jira ticket |
-| `feat: add feature` | `feature/ABC-123-login` | **Rewritten** to `feat(ABC-123): add feature` |
-| `feat(ABC-123): add feature` | any | **Accepted** |
+| `feat: add feature` | `feature/PAY-123-login` | **Rewritten** to `feat(PAY-123): add feature` |
+| `feat(PAY-123): add feature` | any | **Accepted** |
 | `refactor(API-99)!: redesign auth` | any | **Accepted** |
 | `Merge branch 'main'` | any | **Accepted** — merge commits skip validation |
 
-When working on a branch that contains a Jira issue key (e.g. `feature/ABC-123-login`),
+When working on a branch that contains a Jira issue key (e.g. `feature/PAY-123-login`),
 the hook automatically inserts the ticket into the scope position. Multi-line message bodies
 and footers are preserved during rewriting.
 
@@ -191,7 +191,7 @@ If you only need the hook in a single repository without installing the CLI:
 ./install-jira-git-hook repo1 repo2 repo3
 
 # Restrict to specific Jira projects
-./install-jira-git-hook --projects=ALPHA,BETA
+./install-jira-git-hook --projects=PAY,MOB
 
 # Override existing hooks without prompting
 ./install-jira-git-hook --yes
@@ -208,7 +208,7 @@ in the commit message or branch name.
 Options:
   -y, --yes       Override existing commit-msg files
   -p, --projects  Let the hook only accept keys for these Jira projects
-                  e.g. --projects=DS,MYJIRA,MARS
+                  e.g. --projects=PAY,MOB,INFRA
   -h, --help      Show this help
 ```
 
@@ -237,21 +237,41 @@ githooks add
 ```
 
 The interactive prompt guides you through:
-1. **Workspace name** — a label for this workspace (e.g. `alpha`)
-2. **Jira project key** — regex matching allowed ticket prefixes (e.g. `ALPHA` or `(ALPHA|BETA)`)
-3. **Workspace folder** — the parent directory containing your repositories (e.g. `~/projects/alpha/`)
+1. **Workspace name** — a descriptive label for this workspace (e.g. `mobile-app`)
+2. **Jira project key** — regex matching allowed ticket prefixes (e.g. `MOB` or `(MOB|PAY)`)
+3. **Workspace folder** — the parent directory containing your repositories (e.g. `~/projects/mobile/`)
+
+> **Tip:** The workspace name is just a label to help you identify the workspace — it does not
+> need to match your Jira project key. Use something descriptive like `mobile-app`, `backend-api`,
+> or `data-pipeline`. The Jira project key (e.g. `MOB`, `PAY`) controls which ticket prefixes are
+> accepted in commit messages.
 
 ### 3. Start Committing
 
 Any Git repository under the configured workspace folder now enforces the commit message rules automatically. No per-repository setup is needed.
 
 ```bash
-cd ~/projects/alpha/my-repo
-git commit -m "feat(ALPHA-42): implement dashboard"   # Accepted
-git commit -m "quick fix"                              # Rejected
+cd ~/projects/mobile/my-repo
+git commit -m "feat(MOB-42): implement dashboard"   # Accepted
+git commit -m "quick fix"                             # Rejected
 ```
 
 ## Managing Workspaces
+
+A **workspace** maps a folder on your machine to a set of Jira project keys. Every Git
+repository inside that folder automatically gets the commit-msg hook with the configured keys.
+
+Each workspace has three properties:
+
+| Property | Purpose | Example |
+|---|---|---|
+| **Name** | A human-readable label to identify the workspace | `mobile-app` |
+| **Jira project key** | Regex of accepted Jira ticket prefixes | `MOB` or `(MOB\|PAY)` |
+| **Folder** | Parent directory containing your Git repositories | `~/projects/mobile/` |
+
+The name is only used for display and file naming — it does not affect Git behavior.
+The Jira project key determines which ticket prefixes (e.g. `MOB-123`, `PAY-456`) are
+valid in commit messages for repositories under that folder.
 
 ### Adding a Workspace
 
@@ -272,7 +292,7 @@ githooks update
 
 Interactively select a workspace to modify. You can change:
 - **Name** — renames the workspace and its gitconfig file
-- **Jira project key** — updates the accepted ticket patterns (e.g. `ALPHA` → `(ALPHA|BETA)`)
+- **Jira project key** — updates the accepted ticket patterns (e.g. `MOB` → `(MOB|PAY)`)
 - **Folder** — moves the workspace to a different directory path
 
 Each field is pre-filled with the current value — press Enter to keep it unchanged.
@@ -317,19 +337,19 @@ githooks leverages Git's [`includeIf`](https://git-scm.com/docs/git-config#_cond
 directive to automatically apply hooks based on repository location:
 
 ```gitconfig
-[includeIf "gitdir:~/projects/alpha/"]
-    path = .githooks/config/gitconfig-alpha
+[includeIf "gitdir:~/projects/mobile/"]
+    path = .githooks/config/gitconfig-mobile-app
 ```
 
-Every Git repository under `~/projects/alpha/` — including repositories cloned in the future —
+Every Git repository under `~/projects/mobile/` — including repositories cloned in the future —
 automatically inherits the hook configuration. No per-repository setup is required.
 
 Verify the configuration is active for any repository:
 
 ```bash
-cd ~/projects/alpha/any-repo
+cd ~/projects/mobile/any-repo
 git config --get core.hooksPath       # ~/.githooks
-git config --get user.jiraProjects    # ALPHA
+git config --get user.jiraProjects    # MOB
 ```
 
 ### Multiple Jira Projects
@@ -337,29 +357,29 @@ git config --get user.jiraProjects    # ALPHA
 A single workspace can accept tickets from multiple Jira projects using a regex:
 
 ```
-Jira project key RegEx: (ALPHA|BETA|GAMMA)
+Jira project key RegEx: (MOB|PAY|INFRA)
 ```
 
-This accepts commits like `feat(ALPHA-1): ...`, `fix(BETA-42): ...`, or `chore(GAMMA-7): ...`.
+This accepts commits like `feat(MOB-1): ...`, `fix(PAY-42): ...`, or `chore(INFRA-7): ...`.
 
 **Automatic merging:** If you add a new workspace with a folder that already has a workspace
 configured, githooks automatically merges the Jira project keys into a single regex pattern.
-For example, adding `BETA` to a workspace that already tracks `ALPHA` produces `(ALPHA|BETA)` —
+For example, adding `PAY` to a workspace that already tracks `MOB` produces `(MOB|PAY)` —
 no duplicate configuration is created.
 
 ```bash
-githooks add   # workspace "MyProject", key ALPHA, folder ~/projects/shared/
-githooks add   # workspace "Other",     key BETA,  folder ~/projects/shared/
-# Result: single workspace "MyProject" with key (ALPHA|BETA)
+githooks add   # workspace "mobile-app",  key MOB, folder ~/projects/mobile/
+githooks add   # workspace "payments",    key PAY, folder ~/projects/mobile/
+# Result: single workspace "mobile-app" with key (MOB|PAY)
 ```
 
 Alternatively, create separate workspaces with more specific folder paths.
 Git resolves `includeIf` directives using the longest matching path, so a workspace
-at `~/projects/alpha/` takes precedence over a workspace at `~/projects/`.
+at `~/projects/mobile/` takes precedence over a workspace at `~/projects/`.
 
 ### File Structure
 
-After initializing and adding workspaces **Alpha** and **Beta**, the following
+After initializing and adding workspaces **mobile-app** and **backend-api**, the following
 structure is created:
 
 ```
@@ -368,8 +388,8 @@ structure is created:
 └── .githooks/
     ├── commit-msg
     └── config/
-        ├── gitconfig-alpha
-        ├── gitconfig-beta
+        ├── gitconfig-mobile-app
+        ├── gitconfig-backend-api
         └── githooks.json
 ```
 
@@ -378,19 +398,19 @@ structure is created:
 **`~/.gitconfig`** — conditional includes based on repository location:
 
 ```gitconfig
-[includeIf "gitdir:~/work/ws-alpha/"]
-    path = .githooks/config/gitconfig-alpha
-[includeIf "gitdir:~/work/ws-beta/"]
-    path = .githooks/config/gitconfig-beta
+[includeIf "gitdir:~/projects/mobile/"]
+    path = .githooks/config/gitconfig-mobile-app
+[includeIf "gitdir:~/projects/backend/"]
+    path = .githooks/config/gitconfig-backend-api
 ```
 
-**`~/.githooks/config/gitconfig-alpha`** — per-workspace settings:
+**`~/.githooks/config/gitconfig-mobile-app`** — per-workspace settings:
 
 ```gitconfig
 [core]
     hooksPath=~/.githooks
 [user]
-    jiraProjects=ALPHA
+    jiraProjects=MOB
 ```
 
 - `core.hooksPath` points all repositories to the shared hook in `~/.githooks`
@@ -418,11 +438,11 @@ Run `githooks init` to create the required directory structure and configuration
 **Commit rejected but message looks correct**
 
 Check that the type keyword is one of the allowed types (see [Allowed Types](#allowed-types))
-and that the Jira ticket follows the format `PROJECT-NUMBER` (e.g. `ABC-123`).
+and that the Jira ticket follows the format `PROJECT-NUMBER` (e.g. `MOB-123`).
 
 **Branch ticket not auto-inserted**
 
-The branch name must contain a Jira ticket pattern (e.g. `feature/ABC-123-description`).
+The branch name must contain a Jira ticket pattern (e.g. `feature/MOB-123-description`).
 The hook extracts tickets matching the configured project keys.
 
 ## Releasing a New Version
@@ -445,19 +465,19 @@ You can use the included helper scripts to calculate the next version automatica
 
 ```bash
 # Python
-python bump-version.py 1.2.3 'feat(ABC-123): add new command'
+python bump-version.py 1.2.3 'feat(MOB-123): add new command'
 # Output: 1.3.0
 
-python bump-version.py 1.2.3 'feat(ABC-123)!: redesign auth API'
+python bump-version.py 1.2.3 'feat(MOB-123)!: redesign auth API'
 # Output: 2.0.0
 
 # PowerShell
-.\bump-version.ps1 -Version 1.2.3 -Message "feat(ABC-123): add new command"
+.\bump-version.ps1 -Version 1.2.3 -Message "feat(MOB-123): add new command"
 # Output: 1.3.0
 ```
 
 > **Note:** In zsh/bash, use **single quotes** for commit messages containing `!` to prevent
-> shell history expansion (e.g. `'feat(ABC-123)!: ...'` instead of `"feat(ABC-123)!: ..."`).
+> shell history expansion (e.g. `'feat(MOB-123)!: ...'` instead of `"feat(MOB-123)!: ..."`).
 
 
 ### 2. Create and Push a Tag
@@ -493,4 +513,4 @@ Thank you to Stefan Niemeyer for the original work that laid the foundation for 
 
 ## License
 
-This project is released under the [Unlicense](UNLICENSE).
+This project is released under the [MIT License](LICENSE).
