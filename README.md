@@ -430,13 +430,20 @@ You can use the included helper scripts to calculate the next version automatica
 
 ```bash
 # Python
-python bump-version.py 1.2.3 "feat(ABC-123): add new command"
+python bump-version.py 1.2.3 'feat(ABC-123): add new command'
 # Output: 1.3.0
+
+python bump-version.py 1.2.3 'feat(ABC-123)!: redesign auth API'
+# Output: 2.0.0
 
 # PowerShell
 .\bump-version.ps1 -Version 1.2.3 -Message "feat(ABC-123): add new command"
 # Output: 1.3.0
 ```
+
+> **Note:** In zsh/bash, use **single quotes** for commit messages containing `!` to prevent
+> shell history expansion (e.g. `'feat(ABC-123)!: ...'` instead of `"feat(ABC-123)!: ..."`).
+
 
 ### 2. Create and Push a Tag
 
