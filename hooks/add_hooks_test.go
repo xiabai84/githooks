@@ -27,6 +27,41 @@ func TestCheckConfigFiles_AllExist(t *testing.T) {
 	}
 }
 
+func TestMergeJiraKeys_SingleKeys(t *testing.T) {
+	result := mergeJiraKeys("ALPHA", "BETA")
+	if result != "(ALPHA|BETA)" {
+		t.Errorf("expected (ALPHA|BETA), got %s", result)
+	}
+}
+
+func TestMergeJiraKeys_ExistingGroup(t *testing.T) {
+	result := mergeJiraKeys("(ALPHA|BETA)", "GAMMA")
+	if result != "(ALPHA|BETA|GAMMA)" {
+		t.Errorf("expected (ALPHA|BETA|GAMMA), got %s", result)
+	}
+}
+
+func TestMergeJiraKeys_BothGroups(t *testing.T) {
+	result := mergeJiraKeys("(ALPHA|BETA)", "(GAMMA|DELTA)")
+	if result != "(ALPHA|BETA|GAMMA|DELTA)" {
+		t.Errorf("expected (ALPHA|BETA|GAMMA|DELTA), got %s", result)
+	}
+}
+
+func TestMergeJiraKeys_Duplicate(t *testing.T) {
+	result := mergeJiraKeys("(ALPHA|BETA)", "ALPHA")
+	if result != "(ALPHA|BETA)" {
+		t.Errorf("expected (ALPHA|BETA), got %s", result)
+	}
+}
+
+func TestMergeJiraKeys_SingleSame(t *testing.T) {
+	result := mergeJiraKeys("ALPHA", "ALPHA")
+	if result != "ALPHA" {
+		t.Errorf("expected ALPHA, got %s", result)
+	}
+}
+
 func TestCheckConfigFiles_MissingFile(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()

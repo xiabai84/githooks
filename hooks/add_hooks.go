@@ -12,6 +12,18 @@ import (
 )
 
 func AddWorkspace(newWorkspace *types.Workspace) error {
+	// Check if a workspace with the same folder already exists
+	ghConfig, err := ReadGitHooksConfig()
+	if err != nil {
+		return err
+	}
+
+	for i, ws := range ghConfig.Workspaces {
+		if ws.Folder == newWorkspace.Folder {
+			return mergeWorkspace(&ghConfig, i, newWorkspace)
+		}
+	}
+
 	if err := persistConfigAsJSON(newWorkspace); err != nil {
 		return err
 	}
@@ -19,6 +31,58 @@ func AddWorkspace(newWorkspace *types.Workspace) error {
 		return err
 	}
 	return updateGitConfigFile(newWorkspace)
+}
+
+func mergeWorkspace(ghConfig *types.GitHookConfig, existingIdx int, newWorkspace *types.Workspace) error {
+	existing := &ghConfig.Workspaces[existingIdx]
+	mergedKeys := mergeJiraKeys(existing.ProjectKeyRE, newWorkspace.ProjectKeyRE)
+	existing.ProjectKeyRE = mergedKeys
+
+	if err := WriteGitHooksConfig(ghConfig); err != nil {
+		return err
+	}
+	// Rewrite the existing workspace's gitconfig file with merged keys
+	if err := createWorkspaceGitConfig(existing); err != nil {
+		return err
+	}
+	fmt.Println(promptui.IconGood+"  Merged Jira keys into existing workspace", existing.Name, "→", mergedKeys)
+	return nil
+}
+
+func mergeJiraKeys(existing, additional string) string {
+	// Strip outer parentheses to get individual keys
+	existingKeys := stripParens(existing)
+	additionalKeys := stripParens(additional)
+
+	// Collect all unique keys
+	seen := make(map[string]bool)
+	var keys []string
+	for _, k := range strings.Split(existingKeys, "|") {
+		k = strings.TrimSpace(k)
+		if k != "" && !seen[k] {
+			seen[k] = true
+			keys = append(keys, k)
+		}
+	}
+	for _, k := range strings.Split(additionalKeys, "|") {
+		k = strings.TrimSpace(k)
+		if k != "" && !seen[k] {
+			seen[k] = true
+			keys = append(keys, k)
+		}
+	}
+
+	if len(keys) == 1 {
+		return keys[0]
+	}
+	return "(" + strings.Join(keys, "|") + ")"
+}
+
+func stripParens(s string) string {
+	if strings.HasPrefix(s, "(") && strings.HasSuffix(s, ")") {
+		return s[1 : len(s)-1]
+	}
+	return s
 }
 
 func PreviewConfig(newWorkspace *types.Workspace) error {

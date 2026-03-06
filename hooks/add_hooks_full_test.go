@@ -102,6 +102,61 @@ func TestAddWorkspace_MultipleWorkspaces(t *testing.T) {
 	}
 }
 
+func TestAddWorkspace_MergesJiraKeysForSameFolder(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
+
+	ws1 := &types.Workspace{Name: "MyProject", ProjectKeyRE: "ALPHA", Folder: "~/projects/shared/"}
+	ws2 := &types.Workspace{Name: "AnotherProject", ProjectKeyRE: "BETA", Folder: "~/projects/shared/"}
+
+	if err := AddWorkspace(ws1); err != nil {
+		t.Fatalf("AddWorkspace(ws1) returned error: %v", err)
+	}
+	if err := AddWorkspace(ws2); err != nil {
+		t.Fatalf("AddWorkspace(ws2) returned error: %v", err)
+	}
+
+	// Should still be 1 workspace, not 2
+	readConfig, err := ReadGitHooksConfig()
+	if err != nil {
+		t.Fatalf("ReadGitHooksConfig returned error: %v", err)
+	}
+	if len(readConfig.Workspaces) != 1 {
+		t.Fatalf("expected 1 workspace (merged), got %d", len(readConfig.Workspaces))
+	}
+	if readConfig.Workspaces[0].ProjectKeyRE != "(ALPHA|BETA)" {
+		t.Errorf("expected merged key (ALPHA|BETA), got %q", readConfig.Workspaces[0].ProjectKeyRE)
+	}
+
+	// Verify gitconfig file has merged keys
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-myproject")
+	wsContent, err := os.ReadFile(wsConfigPath)
+	if err != nil {
+		t.Fatalf("expected workspace config to exist at %s", wsConfigPath)
+	}
+	if !strings.Contains(string(wsContent), "jiraProjects=(ALPHA|BETA)") {
+		t.Errorf("expected jiraProjects=(ALPHA|BETA), got %q", string(wsContent))
+	}
+
+	// Should only have one includeIf block
+	gitConfig, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		t.Fatalf("failed to read git config: %v", err)
+	}
+	count := strings.Count(string(gitConfig), "includeIf")
+	if count != 1 {
+		t.Errorf("expected 1 includeIf block, got %d", count)
+	}
+}
+
 func TestAddWorkspace_MissingGitConfig(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
