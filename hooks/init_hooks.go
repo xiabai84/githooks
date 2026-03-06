@@ -55,10 +55,24 @@ func InitHooks() (types.GitHookConfig, error) {
 		fmt.Println(promptui.IconGood+"  Updated file", config.Default.CommitMsgPath)
 	}
 
-	if err := WriteGitHooksConfig(&ghConfig); err != nil {
-		return ghConfig, err
+	if _, err := os.Stat(config.Default.GithooksConfigPath); err != nil {
+		if err := WriteGitHooksConfig(&ghConfig); err != nil {
+			return ghConfig, err
+		}
+		fmt.Println(promptui.IconGood+"  Created file", config.Default.GithooksConfigPath)
+	} else {
+		// Preserve existing workspaces
+		existing, err := ReadGitHooksConfig()
+		if err != nil {
+			return ghConfig, err
+		}
+		ghConfig = existing
+		ghConfig.Version = buildinfo.GetBuildInfo().Version
+		if err := WriteGitHooksConfig(&ghConfig); err != nil {
+			return ghConfig, err
+		}
+		fmt.Println(promptui.IconGood+"  Updated file", config.Default.GithooksConfigPath)
 	}
-	fmt.Println(promptui.IconGood+"  Created file", config.Default.GithooksConfigPath)
 
 	return ghConfig, nil
 }

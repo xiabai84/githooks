@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/xiabai84/githooks/config"
+	"github.com/xiabai84/githooks/types"
 )
 
 func TestInitHooks_CreatesAllFiles(t *testing.T) {
@@ -136,5 +137,85 @@ func TestInitHooks_Idempotent(t *testing.T) {
 	_, err = InitHooks()
 	if err != nil {
 		t.Fatalf("second InitHooks returned error: %v", err)
+	}
+}
+
+func TestInitHooks_PreservesExistingWorkspaces(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	// First init creates empty config
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("first InitHooks returned error: %v", err)
+	}
+
+	// Add a workspace
+	ws := &types.Workspace{Name: "TestWS", ProjectKeyRE: "TEST", Folder: "~/work/test/"}
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	if err := AddWorkspace(ws); err != nil {
+		t.Fatalf("AddWorkspace returned error: %v", err)
+	}
+
+	// Run init again
+	ghConfig, err := InitHooks()
+	if err != nil {
+		t.Fatalf("second InitHooks returned error: %v", err)
+	}
+
+	// Workspaces must be preserved
+	if len(ghConfig.Workspaces) != 1 {
+		t.Fatalf("expected 1 workspace, got %d", len(ghConfig.Workspaces))
+	}
+	if ghConfig.Workspaces[0].Name != "TestWS" {
+		t.Errorf("expected workspace name TestWS, got %q", ghConfig.Workspaces[0].Name)
+	}
+	if ghConfig.Workspaces[0].ProjectKeyRE != "TEST" {
+		t.Errorf("expected project key TEST, got %q", ghConfig.Workspaces[0].ProjectKeyRE)
+	}
+
+	// Verify githooks.json on disk
+	readConfig, err := ReadGitHooksConfig()
+	if err != nil {
+		t.Fatalf("ReadGitHooksConfig returned error: %v", err)
+	}
+	if len(readConfig.Workspaces) != 1 {
+		t.Fatalf("expected 1 workspace on disk, got %d", len(readConfig.Workspaces))
+	}
+}
+
+func TestInitHooks_AlwaysUpdatesCommitMsg(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	// First init
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("first InitHooks returned error: %v", err)
+	}
+
+	// Overwrite commit-msg with stale content
+	if err := os.WriteFile(config.Default.CommitMsgPath, []byte("old hook"), 0755); err != nil {
+		t.Fatalf("failed to write commit-msg: %v", err)
+	}
+
+	// Run init again
+	_, err = InitHooks()
+	if err != nil {
+		t.Fatalf("second InitHooks returned error: %v", err)
+	}
+
+	// commit-msg must be updated (not the stale content)
+	content, err := os.ReadFile(config.Default.CommitMsgPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	if string(content) == "old hook" {
+		t.Error("expected commit-msg to be updated, but it still has stale content")
+	}
+	if !strings.HasPrefix(string(content), "#!/usr/bin/env bash") {
+		t.Error("expected commit-msg to start with bash shebang")
 	}
 }
