@@ -19,6 +19,7 @@ ensuring consistent commit messages across your team.
   - [Adding a Workspace](#adding-a-workspace)
   - [Listing Workspaces](#listing-workspaces)
   - [Deleting a Workspace](#deleting-a-workspace)
+  - [Uninstalling](#uninstalling)
 - [How It Works](#how-it-works)
   - [Automatic Detection](#automatic-detection)
   - [Multiple Jira Projects](#multiple-jira-projects)
@@ -281,6 +282,16 @@ Interactively select a workspace to remove. After confirmation, githooks:
 - Removes the workspace entry from `githooks.json`
 - Deletes the workspace-specific `gitconfig-<name>` file
 - Removes the corresponding `includeIf` block from `~/.gitconfig`
+
+### Uninstalling
+
+```bash
+githooks uninstall
+```
+
+Completely removes all files and configuration managed by githooks. After confirmation, githooks:
+- Removes all `includeIf` blocks managed by githooks from `~/.gitconfig`
+- Deletes the entire `~/.githooks/` directory (hook script, workspace configs, registry)
 
 ## How It Works
 
