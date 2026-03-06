@@ -468,9 +468,6 @@ gh release view v1.3.0
 The release is available at `https://github.com/xiabai84/githooks/releases/tag/v1.3.0`.
 Users running `install.sh` or `install.ps1` will automatically download the latest version.
 
-For a complete guide on using githooks in a team workflow with feature branches, pull requests,
-and automated releases, see the [Release Workflow Guide](docs/RELEASE-WORKFLOW.md).
-
 ## Acknowledgements
 
 This project is forked from [stefan-niemeyer/githooks](https://github.com/stefan-niemeyer/githooks).
