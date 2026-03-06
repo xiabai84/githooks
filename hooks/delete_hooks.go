@@ -17,13 +17,17 @@ func DeleteSelectedWorkspace(ghConfig *types.GitHookConfig, idx int) error {
 	if err := overwriteGitConfig(&ghConfig.Workspaces[idx]); err != nil {
 		return err
 	}
+	fmt.Println(promptui.IconGood+"  Modified", config.Default.GitConfigPath, "(removed includeIf block)")
 	ghConfig.Workspaces = append(ghConfig.Workspaces[:idx], ghConfig.Workspaces[idx+1:]...)
 	if err := WriteGitHooksConfig(ghConfig); err != nil {
 		return err
 	}
+	fmt.Println(promptui.IconGood+"  Modified", config.Default.GithooksConfigPath, "(removed workspace entry)")
+	wsConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(removedWorkspace)
 	if err := deleteWorkspaceGitConfig(removedWorkspace); err != nil {
 		return err
 	}
+	fmt.Println(promptui.IconGood+"  Deleted ", wsConfigPath)
 	fmt.Println(promptui.IconGood+"  Removed workspace", removedWorkspace)
 	return nil
 }

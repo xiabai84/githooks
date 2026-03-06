@@ -33,7 +33,7 @@ func InitHooks() (types.GitHookConfig, error) {
 		if err := os.Chmod(config.Default.GitConfigPath, config.ConfigFilePermission); err != nil {
 			return ghConfig, fmt.Errorf("setting git config permissions: %w", err)
 		}
-		fmt.Println(promptui.IconGood+"  Created file", config.Default.GitConfigPath)
+		fmt.Println(promptui.IconGood+"  Created ", config.Default.GitConfigPath)
 	}
 
 	{
@@ -52,14 +52,14 @@ func InitHooks() (types.GitHookConfig, error) {
 		if err := tmpl.Execute(f, &ghConfig); err != nil {
 			return ghConfig, fmt.Errorf("executing commit-msg template: %w", err)
 		}
-		fmt.Println(promptui.IconGood+"  Updated file", config.Default.CommitMsgPath)
+		fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
 	}
 
 	if _, err := os.Stat(config.Default.GithooksConfigPath); err != nil {
 		if err := WriteGitHooksConfig(&ghConfig); err != nil {
 			return ghConfig, err
 		}
-		fmt.Println(promptui.IconGood+"  Created file", config.Default.GithooksConfigPath)
+		fmt.Println(promptui.IconGood+"  Created ", config.Default.GithooksConfigPath)
 	} else {
 		// Preserve existing workspaces
 		existing, err := ReadGitHooksConfig()
@@ -71,7 +71,7 @@ func InitHooks() (types.GitHookConfig, error) {
 		if err := WriteGitHooksConfig(&ghConfig); err != nil {
 			return ghConfig, err
 		}
-		fmt.Println(promptui.IconGood+"  Updated file", config.Default.GithooksConfigPath)
+		fmt.Println(promptui.IconGood+"  Updated ", config.Default.GithooksConfigPath, "(preserved workspaces)")
 	}
 
 	return ghConfig, nil

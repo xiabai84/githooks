@@ -27,10 +27,15 @@ func AddWorkspace(newWorkspace *types.Workspace) error {
 	if err := persistConfigAsJSON(newWorkspace); err != nil {
 		return err
 	}
+	fmt.Println(promptui.IconGood+"  Modified", config.Default.GithooksConfigPath, "(added workspace entry)")
 	if err := createWorkspaceGitConfig(newWorkspace); err != nil {
 		return err
 	}
-	return updateGitConfigFile(newWorkspace)
+	if err := updateGitConfigFile(newWorkspace); err != nil {
+		return err
+	}
+	fmt.Println(promptui.IconGood+"  Added workspace", newWorkspace.Name)
+	return nil
 }
 
 func mergeWorkspace(ghConfig *types.GitHookConfig, existingIdx int, newWorkspace *types.Workspace) error {
@@ -41,11 +46,12 @@ func mergeWorkspace(ghConfig *types.GitHookConfig, existingIdx int, newWorkspace
 	if err := WriteGitHooksConfig(ghConfig); err != nil {
 		return err
 	}
+	fmt.Println(promptui.IconGood+"  Modified", config.Default.GithooksConfigPath, "(merged Jira keys)")
 	// Rewrite the existing workspace's gitconfig file with merged keys
 	if err := createWorkspaceGitConfig(existing); err != nil {
 		return err
 	}
-	fmt.Println(promptui.IconGood+"  Merged Jira keys into existing workspace", existing.Name, "→", mergedKeys)
+	fmt.Println(promptui.IconGood+"  Merged Jira keys into workspace", existing.Name, "→", mergedKeys)
 	return nil
 }
 
@@ -170,6 +176,7 @@ func persistConfigAsJSON(workspace *types.Workspace) error {
 
 func createWorkspaceGitConfig(workspace *types.Workspace) error {
 	workspaceGitConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(workspace.Name)
+	_, existsErr := os.Stat(workspaceGitConfigPath)
 	tmpl, err := template.New("jira-config").Parse(config.HooksConfigTmpl)
 	if err != nil {
 		return fmt.Errorf("parsing jira config template: %w", err)
@@ -182,7 +189,11 @@ func createWorkspaceGitConfig(workspace *types.Workspace) error {
 	if err := tmpl.Execute(f, workspace); err != nil {
 		return fmt.Errorf("executing jira config template: %w", err)
 	}
-	fmt.Println(promptui.IconGood+"  Create new file:", workspaceGitConfigPath)
+	if existsErr != nil {
+		fmt.Println(promptui.IconGood+"  Created ", workspaceGitConfigPath)
+	} else {
+		fmt.Println(promptui.IconGood+"  Modified", workspaceGitConfigPath, "(updated workspace config)")
+	}
 	return nil
 }
 
@@ -205,6 +216,6 @@ func updateGitConfigFile(workspace *types.Workspace) error {
 	if err := tmpl.Execute(f, workspace); err != nil {
 		return fmt.Errorf("executing git config template: %w", err)
 	}
-	fmt.Println(promptui.IconGood+"  Updated file:", config.Default.GitConfigPath)
+	fmt.Println(promptui.IconGood+"  Modified", config.Default.GitConfigPath, "(added includeIf block)")
 	return nil
 }

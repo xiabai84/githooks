@@ -10,6 +10,68 @@ import (
 	"github.com/xiabai84/githooks/types"
 )
 
+func TestInitHooks_PrintsFileOperations_FirstRun(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	var err error
+	output := captureStdout(t, func() {
+		_, err = InitHooks()
+	})
+
+	if err != nil {
+		t.Fatalf("InitHooks returned error: %v", err)
+	}
+
+	// Should mention creating .gitconfig
+	if !strings.Contains(output, "Created") || !strings.Contains(output, config.Default.GitConfigPath) {
+		t.Errorf("expected output to mention creating %s, got:\n%s", config.Default.GitConfigPath, output)
+	}
+
+	// Should mention updating commit-msg
+	if !strings.Contains(output, "Updated") || !strings.Contains(output, config.Default.CommitMsgPath) {
+		t.Errorf("expected output to mention updating %s, got:\n%s", config.Default.CommitMsgPath, output)
+	}
+
+	// Should mention creating githooks.json
+	if !strings.Contains(output, "Created") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention creating %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+}
+
+func TestInitHooks_PrintsFileOperations_SecondRun(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	// First init
+	captureStdout(t, func() {
+		_, _ = InitHooks()
+	})
+
+	// Second init
+	var err error
+	output := captureStdout(t, func() {
+		_, err = InitHooks()
+	})
+
+	if err != nil {
+		t.Fatalf("InitHooks returned error: %v", err)
+	}
+
+	// Should mention updating commit-msg
+	if !strings.Contains(output, "Updated") || !strings.Contains(output, config.Default.CommitMsgPath) {
+		t.Errorf("expected output to mention updating %s, got:\n%s", config.Default.CommitMsgPath, output)
+	}
+
+	// Should mention updating githooks.json (preserved workspaces)
+	if !strings.Contains(output, "Updated") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention updating %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+
+	// .gitconfig already exists, should NOT say Created for .gitconfig
+	// (it should not appear as Created on second run)
+}
+
 func TestInitHooks_CreatesAllFiles(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()

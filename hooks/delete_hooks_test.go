@@ -139,3 +139,38 @@ func TestDeleteSelectedWorkspace_GitConfigPermission(t *testing.T) {
 		t.Errorf("expected .gitconfig permission 0644, got %04o", perm)
 	}
 }
+
+func TestDeleteSelectedWorkspace_PrintsFileOperations(t *testing.T) {
+	ghConfig, cleanup := setupDeleteTest(t)
+	defer cleanup()
+
+	var err error
+	output := captureStdout(t, func() {
+		err = DeleteSelectedWorkspace(ghConfig, 0) // delete Alpha
+	})
+
+	if err != nil {
+		t.Fatalf("DeleteSelectedWorkspace returned error: %v", err)
+	}
+
+	// Should mention modifying .gitconfig
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GitConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GitConfigPath, output)
+	}
+
+	// Should mention modifying githooks.json
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+
+	// Should mention deleting the workspace config file
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-alpha")
+	if !strings.Contains(output, "Deleted") || !strings.Contains(output, wsConfigPath) {
+		t.Errorf("expected output to mention deleting %s, got:\n%s", wsConfigPath, output)
+	}
+
+	// Should still mention removed workspace
+	if !strings.Contains(output, "Removed workspace") || !strings.Contains(output, "Alpha") {
+		t.Errorf("expected output to mention removing workspace Alpha, got:\n%s", output)
+	}
+}

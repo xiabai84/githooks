@@ -10,6 +10,87 @@ import (
 	"github.com/xiabai84/githooks/types"
 )
 
+func TestUpdateWorkspace_PrintsFileOperations_ChangeJiraKeys(t *testing.T) {
+	ghConfig, cleanup := setupUpdateTest(t)
+	defer cleanup()
+
+	updated := &types.Workspace{Name: "Alpha", ProjectKeyRE: "(ALPHA|BETA)", Folder: "~/work/alpha/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = UpdateWorkspace(ghConfig, 0, updated)
+	})
+
+	if err != nil {
+		t.Fatalf("UpdateWorkspace returned error: %v", err)
+	}
+
+	// Should mention modifying githooks.json
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+
+	// Should mention creating/modifying workspace gitconfig
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-alpha")
+	if !strings.Contains(output, wsConfigPath) {
+		t.Errorf("expected output to mention %s, got:\n%s", wsConfigPath, output)
+	}
+
+	// Should mention updated workspace
+	if !strings.Contains(output, "Updated workspace") {
+		t.Errorf("expected output to mention updating workspace, got:\n%s", output)
+	}
+}
+
+func TestUpdateWorkspace_PrintsFileOperations_ChangeFolder(t *testing.T) {
+	ghConfig, cleanup := setupUpdateTest(t)
+	defer cleanup()
+
+	updated := &types.Workspace{Name: "Alpha", ProjectKeyRE: "ALPHA", Folder: "~/work/new-alpha/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = UpdateWorkspace(ghConfig, 0, updated)
+	})
+
+	if err != nil {
+		t.Fatalf("UpdateWorkspace returned error: %v", err)
+	}
+
+	// Should mention modifying .gitconfig (removed old + added new includeIf)
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GitConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GitConfigPath, output)
+	}
+}
+
+func TestUpdateWorkspace_PrintsFileOperations_ChangeName(t *testing.T) {
+	ghConfig, cleanup := setupUpdateTest(t)
+	defer cleanup()
+
+	updated := &types.Workspace{Name: "AlphaRenamed", ProjectKeyRE: "ALPHA", Folder: "~/work/alpha/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = UpdateWorkspace(ghConfig, 0, updated)
+	})
+
+	if err != nil {
+		t.Fatalf("UpdateWorkspace returned error: %v", err)
+	}
+
+	// Should mention deleting old workspace gitconfig
+	oldPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-alpha")
+	if !strings.Contains(output, "Deleted") || !strings.Contains(output, oldPath) {
+		t.Errorf("expected output to mention deleting %s, got:\n%s", oldPath, output)
+	}
+
+	// Should mention creating new workspace gitconfig
+	newPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-alpharenamed")
+	if !strings.Contains(output, "Created") || !strings.Contains(output, newPath) {
+		t.Errorf("expected output to mention creating %s, got:\n%s", newPath, output)
+	}
+}
+
 func setupUpdateTest(t *testing.T) (*types.GitHookConfig, func()) {
 	t.Helper()
 	cleanup := setupTestConfig(t)

@@ -10,6 +10,96 @@ import (
 	"github.com/xiabai84/githooks/types"
 )
 
+func TestAddWorkspace_PrintsFileOperations(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
+
+	ws := &types.Workspace{Name: "MyProject", ProjectKeyRE: "PROJ", Folder: "~/projects/myproject/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = AddWorkspace(ws)
+	})
+
+	if err != nil {
+		t.Fatalf("AddWorkspace returned error: %v", err)
+	}
+
+	// Should mention modifying githooks.json
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+
+	// Should mention creating workspace gitconfig
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-myproject")
+	if !strings.Contains(output, "Created") || !strings.Contains(output, wsConfigPath) {
+		t.Errorf("expected output to mention creating %s, got:\n%s", wsConfigPath, output)
+	}
+
+	// Should mention modifying .gitconfig
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GitConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GitConfigPath, output)
+	}
+
+	// Should mention added workspace
+	if !strings.Contains(output, "Added workspace") || !strings.Contains(output, "MyProject") {
+		t.Errorf("expected output to mention adding workspace MyProject, got:\n%s", output)
+	}
+}
+
+func TestAddWorkspace_MergePrintsFileOperations(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
+
+	ws1 := &types.Workspace{Name: "SharedProject", ProjectKeyRE: "ALPHA", Folder: "~/projects/shared/"}
+	captureStdout(t, func() {
+		_ = AddWorkspace(ws1)
+	})
+
+	ws2 := &types.Workspace{Name: "AnotherProject", ProjectKeyRE: "BETA", Folder: "~/projects/shared/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = AddWorkspace(ws2)
+	})
+
+	if err != nil {
+		t.Fatalf("AddWorkspace (merge) returned error: %v", err)
+	}
+
+	// Should mention modifying githooks.json
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, config.Default.GithooksConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", config.Default.GithooksConfigPath, output)
+	}
+
+	// Should mention modifying workspace gitconfig (updated keys)
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-sharedproject")
+	if !strings.Contains(output, "Modified") || !strings.Contains(output, wsConfigPath) {
+		t.Errorf("expected output to mention modifying %s, got:\n%s", wsConfigPath, output)
+	}
+
+	// Should mention merged Jira keys
+	if !strings.Contains(output, "Merged") {
+		t.Errorf("expected output to mention merging Jira keys, got:\n%s", output)
+	}
+}
+
 func TestAddWorkspace_CreatesAllArtifacts(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
