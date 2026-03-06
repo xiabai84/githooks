@@ -113,22 +113,17 @@ and footers are preserved during rewriting.
 
 ```bash
 curl -sfL https://raw.githubusercontent.com/xiabai84/githooks/main/install.sh | sh
-
-# System-wide (requires sudo)
-sudo mv githooks /usr/local/bin/
-
-# Or user-local (no sudo required)
-mkdir -p ~/.local/bin && mv githooks ~/.local/bin/
 ```
 
-> **Note:** If you install to `~/.local/bin/`, make sure it is in your PATH:
+The install script automatically detects your operating system and architecture,
+downloads the binary, and installs it to `~/.local/bin/`.
+
+> **Note:** If `~/.local/bin/` is not in your PATH, the script will print the
+> command to add it. For example:
 > ```bash
 > echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 > source ~/.zshrc
 > ```
-> For Bash, replace `~/.zshrc` with `~/.bashrc`.
-
-The install script automatically detects your operating system and architecture.
 
 ### Option B: Windows Installation
 

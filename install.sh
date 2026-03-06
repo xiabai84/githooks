@@ -104,11 +104,28 @@ download_and_extract() {
     echo ""
     echo "Note: The commit-msg hook requires Git Bash (included with Git for Windows)."
   else
-    echo "Move githooks to a directory in your PATH, for example:"
-    echo "  sudo mv githooks /usr/local/bin/"
+    INSTALL_DIR="$HOME/.local/bin"
+    mkdir -p "$INSTALL_DIR"
+    mv "${BINARY}" "$INSTALL_DIR/"
+    echo "Installed to ${INSTALL_DIR}/${BINARY}"
     echo ""
-    echo "Or install without sudo:"
-    echo "  mkdir -p ~/.local/bin && mv githooks ~/.local/bin/"
+
+    # Check if INSTALL_DIR is in PATH
+    case ":$PATH:" in
+    *":${INSTALL_DIR}:"*) ;;
+    *)
+      echo "WARNING: ${INSTALL_DIR} is not in your PATH."
+      echo ""
+      echo "Add it by running:"
+      if [ -f "$HOME/.zshrc" ]; then
+        echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
+        echo "  source ~/.zshrc"
+      else
+        echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
+        echo "  source ~/.bashrc"
+      fi
+      ;;
+    esac
   fi
 }
 
