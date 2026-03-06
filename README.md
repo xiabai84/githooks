@@ -463,17 +463,40 @@ based on the commits since the last release:
 
 You can use the included helper scripts to calculate the next version automatically:
 
+**Single message:**
+
 ```bash
 # Python
 python bump-version.py 1.2.3 'feat(MOB-123): add new command'
 # Output: 1.3.0
 
-python bump-version.py 1.2.3 'feat(MOB-123)!: redesign auth API'
-# Output: 2.0.0
-
 # PowerShell
 .\bump-version.ps1 -Version 1.2.3 -Message "feat(MOB-123): add new command"
 # Output: 1.3.0
+```
+
+**Auto mode (reads git log since last tag):**
+
+```bash
+# Python
+python bump-version.py --auto
+# Output: 1.3.0
+
+# PowerShell
+.\bump-version.ps1 -Auto
+# Output: 1.3.0
+```
+
+**Pipe multiple messages via stdin:**
+
+```bash
+# Python
+git log v1.2.3..HEAD --format=%s | python bump-version.py 1.2.3
+# Output: highest bump across all commits
+
+# PowerShell
+git log v1.2.3..HEAD --format=%s | .\bump-version.ps1 -Version 1.2.3
+# Output: highest bump across all commits
 ```
 
 > **Note:** In zsh/bash, use **single quotes** for commit messages containing `!` to prevent
