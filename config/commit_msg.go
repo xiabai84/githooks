@@ -20,6 +20,41 @@ if [[ "$PROJECTS" == "" ]]; then
   PROJECTS=$(git config --get user.jiraProjects)
 fi
 
+# Branch name convention validation
+BRANCH_TYPES="feat|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [[ -n "$CURRENT_BRANCH" && "$CURRENT_BRANCH" != "main" && "$CURRENT_BRANCH" != "master" && "$CURRENT_BRANCH" != "develop" ]]; then
+  BRANCH_RE="^(${BRANCH_TYPES})/.+"
+  if ! [[ "$CURRENT_BRANCH" =~ $BRANCH_RE ]]; then
+    echo >&2 "ERROR: Branch name must follow convention: <type>/<TICKET>-<description>"
+    echo >&2 "  Allowed types: feat, fix, hotfix, chore, release, bugfix, docs, refactor, test, ci"
+    echo >&2 "  Example: feat/PROJ-123-add-user-auth"
+    echo >&2 ""
+    echo >&2 "  Current branch: $CURRENT_BRANCH"
+    exit 1
+  fi
+
+  # Validate Jira ticket in branch name
+  if [ -n "$PROJECTS" ]; then
+    BRANCH_TICKET=$(echo "$CURRENT_BRANCH" | grep --ignore-case --extended-regexp --only-matching --regexp="\<${PROJECTS}-[[:digit:]]+\>" | tr '[:lower:]' '[:upper:]')
+  else
+    BRANCH_TICKET=$(echo "$CURRENT_BRANCH" | grep --extended-regexp --only-matching --regexp='\<[[:alpha:]][[:alnum:]]*-[[:digit:]]+\>' | tr '[:lower:]' '[:upper:]')
+  fi
+
+  if [[ -z "$BRANCH_TICKET" ]]; then
+    if [ -n "$PROJECTS" ]; then
+      echo >&2 "ERROR: Branch name must include a Jira ticket matching '$PROJECTS'."
+    else
+      echo >&2 "ERROR: Branch name must include a Jira ticket."
+    fi
+    echo >&2 "  Example: feat/PROJ-123-add-user-auth"
+    echo >&2 ""
+    echo >&2 "  Current branch: $CURRENT_BRANCH"
+    exit 1
+  fi
+fi
+
 FIRST_LINE=$(head -n 1 "$1")
 
 # Allow merge commits without validation
