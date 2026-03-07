@@ -140,6 +140,59 @@ func TestDeleteSelectedWorkspace_GitConfigPermission(t *testing.T) {
 	}
 }
 
+func TestDeleteSelectedWorkspace_HandlesWhitespaceVariations(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	ws1 := types.Workspace{Name: "Alpha", ProjectKeyRE: "ALPHA", Folder: "~/work/alpha/"}
+	ws2 := types.Workspace{Name: "Beta", ProjectKeyRE: "BETA", Folder: "~/work/beta/"}
+
+	ghConfig := &types.GitHookConfig{
+		Version:    "1.0.0",
+		Workspaces: []types.Workspace{ws1, ws2},
+	}
+	if err := WriteGitHooksConfig(ghConfig); err != nil {
+		t.Fatalf("WriteGitHooksConfig returned error: %v", err)
+	}
+
+	// Create workspace config files
+	for _, ws := range ghConfig.Workspaces {
+		configPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(ws.Name))
+		if err := os.WriteFile(configPath, []byte("[core]\n    hooksPath=~/.githooks\n"), 0644); err != nil {
+			t.Fatalf("failed to write workspace config: %v", err)
+		}
+	}
+
+	// Write .gitconfig with DIFFERENT whitespace than the template produces
+	// (tabs instead of spaces, extra whitespace around =)
+	gitConfigContent := "[user]\n\tname = Test\n" +
+		"[includeIf \"gitdir:~/work/alpha/\"]\n" +
+		"\tpath = " + config.GitHooksFolder + "/" + config.GitHooksConfigFolder + "/" + config.GitHooksConfigPrefix + "-alpha\n" +
+		"[includeIf \"gitdir:~/work/beta/\"]\n" +
+		"\tpath = " + config.GitHooksFolder + "/" + config.GitHooksConfigFolder + "/" + config.GitHooksConfigPrefix + "-beta\n"
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(gitConfigContent), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+
+	err := DeleteSelectedWorkspace(ghConfig, 0) // delete Alpha
+	if err != nil {
+		t.Fatalf("DeleteSelectedWorkspace returned error: %v", err)
+	}
+
+	content, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+
+	if strings.Contains(string(content), "alpha") {
+		t.Error("expected .gitconfig to no longer contain 'alpha' includeIf block after whitespace variation")
+	}
+	if !strings.Contains(string(content), "beta") {
+		t.Error("expected .gitconfig to still contain 'beta' includeIf block")
+	}
+}
+
 func TestDeleteSelectedWorkspace_PrintsFileOperations(t *testing.T) {
 	ghConfig, cleanup := setupDeleteTest(t)
 	defer cleanup()

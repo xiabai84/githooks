@@ -355,6 +355,22 @@ Interactively select a workspace to remove. After confirmation, githooks:
 - Deletes the workspace-specific `gitconfig-<name>` file
 - Removes the corresponding `includeIf` block from `~/.gitconfig`
 
+### Validating a Commit Message
+
+```bash
+githooks check "feat(PROJ-123): add login page"
+```
+
+Validates a commit message against Conventional Commits format and Jira ticket rules without
+actually committing. Useful for CI pipelines and debugging hook behavior.
+
+```bash
+# Simulate branch-based auto-injection
+githooks check "feat: add login" --branch feat/PROJ-123-login
+```
+
+Exit code `0` means valid, `1` means invalid (error printed to stderr).
+
 ### Uninstalling
 
 ```bash
@@ -480,6 +496,10 @@ and that the Jira ticket follows the format `PROJECT-NUMBER` (e.g. `MOB-123`).
 
 The branch name must contain a Jira ticket pattern (e.g. `feature/MOB-123-description`).
 The hook extracts tickets matching the configured project keys.
+
+> **Note:** If the branch contains multiple Jira tickets (e.g. `feat/MOB-123-PAY-456-integration`),
+> only the **first** matching ticket is auto-inserted (`MOB-123`). To reference multiple tickets,
+> include them manually in the commit message scope.
 
 ## Releasing a New Version
 

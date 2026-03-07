@@ -56,7 +56,8 @@ func AddWorkspace(newWorkspace *types.Workspace) error {
 		fmt.Println(promptui.IconWarn+"  Warning: folder", newWorkspace.Folder, "does not exist")
 	}
 
-	if err := persistConfigAsJSON(newWorkspace); err != nil {
+	ghConfig.Workspaces = append(ghConfig.Workspaces, *newWorkspace)
+	if err := WriteGitHooksConfig(&ghConfig); err != nil {
 		return err
 	}
 	fmt.Println(promptui.IconGood+"  Modified", config.Default.GithooksConfigPath, "(added workspace entry)")
@@ -197,14 +198,6 @@ func previewWorkspaceGitConfig(workspace *types.Workspace) error {
 	return tmpl.Execute(os.Stdout, workspace)
 }
 
-func persistConfigAsJSON(workspace *types.Workspace) error {
-	ghConfig, err := ReadGitHooksConfig()
-	if err != nil {
-		return err
-	}
-	ghConfig.Workspaces = append(ghConfig.Workspaces, *workspace)
-	return WriteGitHooksConfig(&ghConfig)
-}
 
 func createWorkspaceGitConfig(workspace *types.Workspace) error {
 	workspaceGitConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(workspace.Name)

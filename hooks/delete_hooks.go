@@ -1,11 +1,9 @@
 package hooks
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
 
 	"github.com/manifoldco/promptui"
 	"github.com/xiabai84/githooks/config"
@@ -37,18 +35,29 @@ func overwriteGitConfig(workspace *types.Workspace) error {
 	if err != nil {
 		return fmt.Errorf("reading git config: %w", err)
 	}
-	var partToReplace bytes.Buffer
-	tmpl, err := template.New("original").Funcs(template.FuncMap{
-		"toLower": strings.ToLower,
-	}).Parse(config.GitConfigPatch)
-	if err != nil {
-		return fmt.Errorf("parsing git config patch template: %w", err)
+
+	lines := strings.Split(string(bytesRead), "\n")
+	var result []string
+	wsConfigSuffix := config.GitHooksConfigPrefix + "-" + strings.ToLower(workspace.Name)
+
+	for i := 0; i < len(lines); i++ {
+		trimmed := strings.TrimSpace(lines[i])
+		// Match includeIf line with the workspace's folder
+		if strings.Contains(trimmed, "[includeIf") && strings.Contains(trimmed, "gitdir:"+workspace.Folder) {
+			// Check if next line is the path line for this workspace
+			if i+1 < len(lines) {
+				nextTrimmed := strings.TrimSpace(lines[i+1])
+				if strings.HasPrefix(nextTrimmed, "path") && strings.Contains(nextTrimmed, wsConfigSuffix) {
+					i++ // skip both lines
+					continue
+				}
+			}
+		}
+		result = append(result, lines[i])
 	}
-	if err := tmpl.Execute(&partToReplace, workspace); err != nil {
-		return fmt.Errorf("executing git config patch template: %w", err)
-	}
-	newGitConfigContent := strings.Replace(string(bytesRead), partToReplace.String(), "", -1)
-	if err := os.WriteFile(config.Default.GitConfigPath, []byte(newGitConfigContent), config.ConfigFilePermission); err != nil {
+
+	newContent := strings.Join(result, "\n")
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(newContent), config.ConfigFilePermission); err != nil {
 		return fmt.Errorf("writing git config: %w", err)
 	}
 	return nil
