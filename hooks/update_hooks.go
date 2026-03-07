@@ -2,6 +2,7 @@ package hooks
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -26,7 +27,7 @@ func UpdateWorkspace(ghConfig *types.GitHookConfig, idx int, updated *types.Work
 
 	// If name changed, remove old workspace gitconfig file
 	if old.Name != updated.Name {
-		oldConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(old.Name)
+		oldConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(old.Name))
 		if err := deleteWorkspaceGitConfig(old.Name); err == nil {
 			fmt.Println(promptui.IconGood+"  Deleted ", oldConfigPath)
 		}

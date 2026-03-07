@@ -3,6 +3,7 @@ package hooks
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -21,7 +22,7 @@ func DeleteSelectedWorkspace(ghConfig *types.GitHookConfig, idx int) error {
 		return err
 	}
 	fmt.Println(promptui.IconGood+"  Modified", config.Default.GithooksConfigPath, "(removed workspace entry)")
-	wsConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(removedWorkspace)
+	wsConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(removedWorkspace))
 	if err := deleteWorkspaceGitConfig(removedWorkspace); err != nil {
 		return err
 	}
@@ -64,7 +65,7 @@ func overwriteGitConfig(workspace *types.Workspace) error {
 }
 
 func deleteWorkspaceGitConfig(wsName string) error {
-	configPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(wsName)
+	configPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(wsName))
 	if err := os.Remove(configPath); err != nil {
 		return fmt.Errorf("removing workspace config %s: %w", configPath, err)
 	}

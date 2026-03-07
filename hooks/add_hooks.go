@@ -3,6 +3,7 @@ package hooks
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -200,7 +201,7 @@ func previewWorkspaceGitConfig(workspace *types.Workspace) error {
 
 
 func createWorkspaceGitConfig(workspace *types.Workspace) error {
-	workspaceGitConfigPath := config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + strings.ToLower(workspace.Name)
+	workspaceGitConfigPath := filepath.Join(config.Default.HookConfigDir, config.GitHooksConfigPrefix+"-"+strings.ToLower(workspace.Name))
 	_, existsErr := os.Stat(workspaceGitConfigPath)
 	tmpl, err := template.New("jira-config").Parse(config.HooksConfigTmpl)
 	if err != nil {
