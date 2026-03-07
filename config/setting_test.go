@@ -29,6 +29,9 @@ func TestNewPaths_BuildsCorrectPaths(t *testing.T) {
 	if p.GitConfigPath != filepath.Join("/home/testuser", ".gitconfig") {
 		t.Errorf("GitConfigPath = %q, want %q", p.GitConfigPath, filepath.Join("/home/testuser", ".gitconfig"))
 	}
+	if p.PostCheckoutPath != filepath.Join("/home/testuser", ".githooks", "post-checkout") {
+		t.Errorf("PostCheckoutPath = %q, want %q", p.PostCheckoutPath, filepath.Join("/home/testuser", ".githooks", "post-checkout"))
+	}
 }
 
 func TestNewPaths_DifferentHomeDirs(t *testing.T) {

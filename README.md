@@ -386,7 +386,9 @@ Branch names must follow the convention `<type>/<TICKET>-<description>`:
 - **Ticket:** Must match the workspace's Jira project key
 - **Exempt branches:** `main`, `master`, `develop` skip validation
 
-Branch names are also validated automatically at commit time via the `commit-msg` hook.
+Branch names are also validated automatically:
+- **At checkout** — the `post-checkout` hook prints a warning when switching to a branch with an invalid name
+- **At commit** — the `commit-msg` hook blocks commits on branches with invalid names
 
 ### Uninstalling
 

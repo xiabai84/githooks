@@ -94,6 +94,7 @@ func TestInitHooks_CreatesAllFiles(t *testing.T) {
 		config.Default.HookConfigDir,
 		config.Default.GitConfigPath,
 		config.Default.CommitMsgPath,
+		config.Default.PostCheckoutPath,
 		config.Default.GithooksConfigPath,
 	}
 	for _, p := range paths {
@@ -160,6 +161,27 @@ func TestInitHooks_CommitMsgContainsBashShebang(t *testing.T) {
 	}
 	if !strings.HasPrefix(string(content), "#!/usr/bin/env bash") {
 		t.Error("commit-msg should start with bash shebang")
+	}
+}
+
+func TestInitHooks_PostCheckoutContainsBashShebang(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("InitHooks returned error: %v", err)
+	}
+
+	content, err := os.ReadFile(config.Default.PostCheckoutPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	if !strings.HasPrefix(string(content), "#!/usr/bin/env bash") {
+		t.Error("post-checkout should start with bash shebang")
+	}
+	if !strings.Contains(string(content), "branch checkout") {
+		t.Error("post-checkout should check for branch checkout flag")
 	}
 }
 

@@ -45,6 +45,16 @@ func InitHooks() (types.GitHookConfig, error) {
 		fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
 	}
 
+	_, postCheckoutErr := os.Stat(config.Default.PostCheckoutPath)
+	if err := os.WriteFile(config.Default.PostCheckoutPath, []byte(config.PostCheckout), config.ExecutableFilePermission); err != nil {
+		return ghConfig, fmt.Errorf("creating post-checkout: %w", err)
+	}
+	if postCheckoutErr != nil {
+		fmt.Println(promptui.IconGood+"  Created ", config.Default.PostCheckoutPath)
+	} else {
+		fmt.Println(promptui.IconGood+"  Updated ", config.Default.PostCheckoutPath)
+	}
+
 	if _, err := os.Stat(config.Default.GithooksConfigPath); err != nil {
 		if err := WriteGitHooksConfig(&ghConfig); err != nil {
 			return ghConfig, err

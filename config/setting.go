@@ -11,6 +11,7 @@ const GitHooksConfigFolder = "config"
 const GithooksLogName = "githooks.log"
 const GithooksConfigName = "githooks.json"
 const CommitMsgName = "commit-msg"
+const PostCheckoutName = "post-checkout"
 const GitConfigFilename = ".gitconfig"
 const GitHooksConfigPrefix = "gitconfig"
 
@@ -24,6 +25,7 @@ type Paths struct {
 	GithooksLogPath    string
 	GithooksConfigPath string
 	CommitMsgPath      string
+	PostCheckoutPath   string
 	GitConfigPath      string
 }
 
@@ -47,6 +49,7 @@ func NewPaths(homeDir string) Paths {
 		GithooksLogPath:    filepath.Join(hookConfigDir, GithooksLogName),
 		GithooksConfigPath: filepath.Join(hookConfigDir, GithooksConfigName),
 		CommitMsgPath:      filepath.Join(hookDir, CommitMsgName),
+		PostCheckoutPath:   filepath.Join(hookDir, PostCheckoutName),
 		GitConfigPath:      filepath.Join(homeDir, GitConfigFilename),
 	}
 }
