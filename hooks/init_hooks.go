@@ -35,10 +35,15 @@ func InitHooks() (types.GitHookConfig, error) {
 		fmt.Println(promptui.IconGood+"  Created ", config.Default.GitConfigPath)
 	}
 
+	_, commitMsgErr := os.Stat(config.Default.CommitMsgPath)
 	if err := os.WriteFile(config.Default.CommitMsgPath, []byte(config.CommitMsg), config.ExecutableFilePermission); err != nil {
 		return ghConfig, fmt.Errorf("creating commit-msg: %w", err)
 	}
-	fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
+	if commitMsgErr != nil {
+		fmt.Println(promptui.IconGood+"  Created ", config.Default.CommitMsgPath)
+	} else {
+		fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
+	}
 
 	if _, err := os.Stat(config.Default.GithooksConfigPath); err != nil {
 		if err := WriteGitHooksConfig(&ghConfig); err != nil {

@@ -28,9 +28,9 @@ func TestInitHooks_PrintsFileOperations_FirstRun(t *testing.T) {
 		t.Errorf("expected output to mention creating %s, got:\n%s", config.Default.GitConfigPath, output)
 	}
 
-	// Should mention updating commit-msg
-	if !strings.Contains(output, "Updated") || !strings.Contains(output, config.Default.CommitMsgPath) {
-		t.Errorf("expected output to mention updating %s, got:\n%s", config.Default.CommitMsgPath, output)
+	// Should mention creating commit-msg (first run)
+	if !strings.Contains(output, "Created") || !strings.Contains(output, config.Default.CommitMsgPath) {
+		t.Errorf("expected output to mention creating %s, got:\n%s", config.Default.CommitMsgPath, output)
 	}
 
 	// Should mention creating githooks.json
