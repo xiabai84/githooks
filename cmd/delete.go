@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -44,16 +43,10 @@ var deleteCmd = &cobra.Command{
 			return nil
 		}
 
-		prompt2 := promptui.Prompt{
-			Label:     "Do you Really want to delete this workspace",
-			IsConfirm: true,
-		}
-		confirmed, err := prompt2.Run()
+		prompt2 := newConfirmPrompt("Do you really want to delete this workspace", false)
+		_, err = prompt2.Run()
 		if err != nil {
 			fmt.Println("Canceled")
-			return nil
-		}
-		if strings.ToLower(confirmed) != "y" {
 			return nil
 		}
 		return hooks.DeleteSelectedWorkspace(&ghConfig, i)

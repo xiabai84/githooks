@@ -69,11 +69,7 @@ var addCmd = &cobra.Command{
 			return err
 		}
 
-		prompt := promptui.Prompt{
-			Label:     "Input was correct",
-			IsConfirm: true,
-			Default:   "y",
-		}
+		prompt := newConfirmPrompt("Input was correct", true)
 
 		_, err = prompt.Run()
 		if err != nil {

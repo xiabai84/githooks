@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/xiabai84/githooks/hooks"
 )
@@ -21,16 +19,10 @@ var uninstallCmd = &cobra.Command{
 		fmt.Println("  - includeIf blocks from ~/.gitconfig")
 		fmt.Println()
 
-		prompt := promptui.Prompt{
-			Label:     "Are you sure you want to uninstall githooks",
-			IsConfirm: true,
-		}
-		confirmed, err := prompt.Run()
+		prompt := newConfirmPrompt("Are you sure you want to uninstall githooks", false)
+		_, err := prompt.Run()
 		if err != nil {
 			fmt.Println("Canceled")
-			return nil
-		}
-		if strings.ToLower(confirmed) != "y" {
 			return nil
 		}
 
