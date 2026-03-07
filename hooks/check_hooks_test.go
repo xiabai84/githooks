@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -72,5 +73,74 @@ func TestCheckCommitMessage_NoProjectFilter(t *testing.T) {
 	result := CheckCommitMessage("feat(ANY-999): something", "", "")
 	if !result.Valid {
 		t.Errorf("expected any ticket to be valid when no project filter, got error: %s", result.Error)
+	}
+}
+
+func TestCheckBranchName_ValidBranch(t *testing.T) {
+	cases := []struct {
+		branch   string
+		projects string
+	}{
+		{"feat/PROJ-123-add-login", "PROJ"},
+		{"fix/PROJ-456-fix-crash", "PROJ"},
+		{"hotfix/PROJ-1-urgent", "PROJ"},
+		{"chore/PROJ-99-bump-deps", "PROJ"},
+		{"bugfix/PROJ-42-edge-case", "PROJ"},
+		{"docs/PROJ-10-update-readme", "PROJ"},
+		{"refactor/PROJ-5-cleanup", "PROJ"},
+		{"test/PROJ-7-add-tests", "PROJ"},
+		{"ci/PROJ-3-pipeline", "PROJ"},
+		{"release/PROJ-200-prep", "PROJ"},
+		{"feat/MOB-1-something", "(PROJ|MOB)"},
+		{"feat/ANY-999-something", ""},
+	}
+	for _, tc := range cases {
+		result := CheckBranchName(tc.branch, tc.projects)
+		if !result.Valid {
+			t.Errorf("expected branch %q with projects=%q to be valid, got error: %s", tc.branch, tc.projects, result.Error)
+		}
+	}
+}
+
+func TestCheckBranchName_ExemptBranches(t *testing.T) {
+	for _, branch := range []string{"main", "master", "develop"} {
+		result := CheckBranchName(branch, "PROJ")
+		if !result.Valid {
+			t.Errorf("expected exempt branch %q to be valid, got error: %s", branch, result.Error)
+		}
+	}
+}
+
+func TestCheckBranchName_InvalidPrefix(t *testing.T) {
+	result := CheckBranchName("add-login-page", "PROJ")
+	if result.Valid {
+		t.Error("expected branch without valid prefix to be invalid")
+	}
+	if !strings.Contains(result.Error, "must follow convention") {
+		t.Errorf("expected error about convention, got: %s", result.Error)
+	}
+}
+
+func TestCheckBranchName_MissingTicket(t *testing.T) {
+	result := CheckBranchName("feat/add-login", "PROJ")
+	if result.Valid {
+		t.Error("expected branch without ticket to be invalid")
+	}
+	if !strings.Contains(result.Error, "Jira ticket") {
+		t.Errorf("expected error about Jira ticket, got: %s", result.Error)
+	}
+}
+
+func TestCheckBranchName_WrongProjectTicket(t *testing.T) {
+	result := CheckBranchName("feat/OTHER-123-add-login", "PROJ")
+	if result.Valid {
+		t.Error("expected branch with wrong project ticket to be invalid")
+	}
+}
+
+func TestCheckBranchName_NoProjectFilter(t *testing.T) {
+	result := CheckBranchName("feat/ANYTHING-42-desc", "")
+	if !result.Valid {
+		t.Errorf("expected any ticket to be valid with no project filter, got error: %s", result.Error)
 	}
 }

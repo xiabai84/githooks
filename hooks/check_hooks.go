@@ -16,6 +16,42 @@ type CheckResult struct {
 var commitTypes = "feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
 var convRE = regexp.MustCompile(`^(` + commitTypes + `)(\(([^)]*)\))?(!)?: (.+)`)
 
+var branchPrefixes = "feat|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
+var branchRE = regexp.MustCompile(`^(` + branchPrefixes + `)/(.+)`)
+var exemptBranches = map[string]bool{"main": true, "master": true, "develop": true}
+
+// CheckBranchName validates a git branch name against naming conventions.
+// projects is the Jira project key filter (e.g. "PROJ" or "(PROJ|MOB)"), empty means any.
+func CheckBranchName(branch, projects string) CheckResult {
+	if exemptBranches[branch] {
+		return CheckResult{Valid: true, Message: branch}
+	}
+
+	if !branchRE.MatchString(branch) {
+		return CheckResult{
+			Valid: false,
+			Error: fmt.Sprintf("Branch name must follow convention: <type>/<TICKET>-<description>\n"+
+				"  Allowed types: %s\n"+
+				"  Example: feat/PROJ-123-add-user-auth\n\n"+
+				"  Current branch: %s", strings.Replace(branchPrefixes, "|", ", ", -1), branch),
+		}
+	}
+
+	ticket := extractTicket(branch, projects)
+	if ticket == "" {
+		errMsg := "Branch name must include a Jira ticket."
+		if projects != "" {
+			errMsg = fmt.Sprintf("Branch name must include a Jira ticket matching '%s'.", projects)
+		}
+		return CheckResult{
+			Valid: false,
+			Error: fmt.Sprintf("%s\n  Example: feat/%s-123-add-feature\n\n  Current branch: %s", errMsg, projects, branch),
+		}
+	}
+
+	return CheckResult{Valid: true, Message: branch}
+}
+
 // CheckCommitMessage validates a commit message against Conventional Commits + Jira rules.
 // projects is the Jira project key filter (e.g. "PROJ" or "(PROJ|MOB)"), empty means any.
 // branch is the git branch name for auto-injection simulation, empty to skip.
