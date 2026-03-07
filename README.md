@@ -371,6 +371,23 @@ githooks check "feat: add login" --branch feat/PROJ-123-login
 
 Exit code `0` means valid, `1` means invalid (error printed to stderr).
 
+### Validating a Branch Name
+
+```bash
+# Validate a specific branch name
+githooks check --branch-name feat/PROJ-123-add-login
+
+# Validate the current branch
+githooks check --branch-name
+```
+
+Branch names must follow the convention `<type>/<TICKET>-<description>`:
+- **Allowed types:** `feat`, `fix`, `hotfix`, `chore`, `release`, `bugfix`, `docs`, `refactor`, `test`, `ci`
+- **Ticket:** Must match the workspace's Jira project key
+- **Exempt branches:** `main`, `master`, `develop` skip validation
+
+Branch names are also validated automatically at commit time via the `commit-msg` hook.
+
 ### Uninstalling
 
 ```bash
