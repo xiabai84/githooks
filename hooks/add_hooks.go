@@ -3,6 +3,7 @@ package hooks
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -11,7 +12,20 @@ import (
 	"github.com/xiabai84/githooks/types"
 )
 
+// ValidateJiraKeyRegex checks if the given Jira key pattern is a valid regex.
+func ValidateJiraKeyRegex(pattern string) error {
+	_, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid Jira key regex %q: %w", pattern, err)
+	}
+	return nil
+}
+
 func AddWorkspace(newWorkspace *types.Workspace) error {
+	if err := ValidateJiraKeyRegex(newWorkspace.ProjectKeyRE); err != nil {
+		return err
+	}
+
 	// Check if a workspace with the same folder already exists
 	ghConfig, err := ReadGitHooksConfig()
 	if err != nil {
@@ -22,6 +36,24 @@ func AddWorkspace(newWorkspace *types.Workspace) error {
 		if ws.Folder == newWorkspace.Folder {
 			return mergeWorkspace(&ghConfig, i, newWorkspace)
 		}
+	}
+
+	// Check for duplicate workspace name (different folder, same name = gitconfig conflict)
+	for _, ws := range ghConfig.Workspaces {
+		if strings.EqualFold(ws.Name, newWorkspace.Name) {
+			return fmt.Errorf("workspace %q already exists (folder: %s). Use 'githooks update' to modify it", ws.Name, ws.Folder)
+		}
+	}
+
+	// Warn if folder doesn't exist (non-blocking)
+	expandedFolder := newWorkspace.Folder
+	if strings.HasPrefix(expandedFolder, "~/") {
+		if home, err := os.UserHomeDir(); err == nil {
+			expandedFolder = home + expandedFolder[1:]
+		}
+	}
+	if _, err := os.Stat(expandedFolder); os.IsNotExist(err) {
+		fmt.Println(promptui.IconWarn+"  Warning: folder", newWorkspace.Folder, "does not exist")
 	}
 
 	if err := persistConfigAsJSON(newWorkspace); err != nil {

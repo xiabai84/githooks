@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/xiabai84/githooks/config"
+	"github.com/xiabai84/githooks/types"
 )
 
 func TestUninstall_RemovesHookDir(t *testing.T) {
@@ -69,6 +70,41 @@ func TestUninstall_CleansGitConfig(t *testing.T) {
 	}
 	if !strings.Contains(content, "[core]") {
 		t.Error("expected non-githooks config to be preserved")
+	}
+}
+
+func TestUninstall_PrintsWorkspaceList(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	// Create config with workspaces
+	ghConfig := &types.GitHookConfig{
+		Version: "1.0.0",
+		Workspaces: []types.Workspace{
+			{Name: "Alpha", ProjectKeyRE: "ALPHA", Folder: "~/work/alpha/"},
+			{Name: "Beta", ProjectKeyRE: "BETA", Folder: "~/work/beta/"},
+		},
+	}
+	if err := WriteGitHooksConfig(ghConfig); err != nil {
+		t.Fatalf("WriteGitHooksConfig returned error: %v", err)
+	}
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte("[user]\n    name = Test\n"), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+
+	output := captureStdout(t, func() {
+		_ = Uninstall()
+	})
+
+	// Should list workspaces that will be removed
+	if !strings.Contains(output, "Alpha") {
+		t.Errorf("expected output to mention workspace Alpha, got:\n%s", output)
+	}
+	if !strings.Contains(output, "Beta") {
+		t.Errorf("expected output to mention workspace Beta, got:\n%s", output)
+	}
+	if !strings.Contains(output, "~/work/alpha/") {
+		t.Errorf("expected output to mention folder ~/work/alpha/, got:\n%s", output)
 	}
 }
 

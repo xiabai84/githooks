@@ -3,7 +3,6 @@ package hooks
 import (
 	"fmt"
 	"os"
-	"text/template"
 
 	"github.com/manifoldco/promptui"
 	"github.com/xiabai84/githooks/buildinfo"
@@ -36,24 +35,10 @@ func InitHooks() (types.GitHookConfig, error) {
 		fmt.Println(promptui.IconGood+"  Created ", config.Default.GitConfigPath)
 	}
 
-	{
-		tmpl, err := template.New(".githooks").Parse(config.CommitMsg)
-		if err != nil {
-			return ghConfig, fmt.Errorf("parsing commit-msg template: %w", err)
-		}
-		f, err := os.Create(config.Default.CommitMsgPath)
-		if err != nil {
-			return ghConfig, fmt.Errorf("creating commit-msg: %w", err)
-		}
-		defer f.Close()
-		if err := os.Chmod(config.Default.CommitMsgPath, config.ExecutableFilePermission); err != nil {
-			return ghConfig, fmt.Errorf("setting commit-msg permissions: %w", err)
-		}
-		if err := tmpl.Execute(f, &ghConfig); err != nil {
-			return ghConfig, fmt.Errorf("executing commit-msg template: %w", err)
-		}
-		fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
+	if err := os.WriteFile(config.Default.CommitMsgPath, []byte(config.CommitMsg), config.ExecutableFilePermission); err != nil {
+		return ghConfig, fmt.Errorf("creating commit-msg: %w", err)
 	}
+	fmt.Println(promptui.IconGood+"  Updated ", config.Default.CommitMsgPath)
 
 	if _, err := os.Stat(config.Default.GithooksConfigPath); err != nil {
 		if err := WriteGitHooksConfig(&ghConfig); err != nil {

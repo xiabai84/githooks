@@ -10,6 +10,16 @@ import (
 )
 
 func Uninstall() error {
+	// List workspaces that will be removed
+	ghConfig, err := ReadGitHooksConfig()
+	if err == nil && len(ghConfig.Workspaces) > 0 {
+		fmt.Println("  The following workspaces will be removed:")
+		for _, ws := range ghConfig.Workspaces {
+			fmt.Printf("    - %s (%s) [%s]\n", ws.Name, ws.Folder, ws.ProjectKeyRE)
+		}
+		fmt.Println()
+	}
+
 	// Remove all includeIf blocks managed by githooks from .gitconfig
 	if err := removeGithooksFromGitConfig(); err != nil {
 		return err

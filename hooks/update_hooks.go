@@ -61,25 +61,3 @@ func printChanges(old, updated *types.Workspace) {
 		fmt.Printf("  Folder:       %s → %s\n", old.Folder, updated.Folder)
 	}
 }
-
-// RenameWorkspaceGitConfig handles renaming the gitconfig file in .gitconfig
-// when the workspace name changes but the folder stays the same.
-func RenameWorkspaceGitConfig(old, updated *types.Workspace) error {
-	if old.Name == updated.Name {
-		return nil
-	}
-
-	// Remove old includeIf and add new one
-	if err := overwriteGitConfig(old); err != nil {
-		return err
-	}
-
-	// Re-add with the new name (folder is the same, so gitdir matches)
-	tmpWs := *updated
-	return updateGitConfigFile(&tmpWs)
-}
-
-// GetWorkspaceGitConfigPath returns the path to a workspace's gitconfig file.
-func GetWorkspaceGitConfigPath(wsName string) string {
-	return config.Default.HookConfigDir + "/" + config.GitHooksConfigPrefix + "-" + wsName
-}

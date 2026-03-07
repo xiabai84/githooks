@@ -247,6 +247,36 @@ func TestAddWorkspace_MergesJiraKeysForSameFolder(t *testing.T) {
 	}
 }
 
+func TestAddWorkspace_WarnsNonExistentFolder(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+	initialConfig := &types.GitHookConfig{Version: "1.0.0", Workspaces: []types.Workspace{}}
+	if err := WriteGitHooksConfig(initialConfig); err != nil {
+		t.Fatalf("failed to write githooks config: %v", err)
+	}
+
+	ws := &types.Workspace{Name: "Ghost", ProjectKeyRE: "GHOST", Folder: "~/nonexistent/path/that/does/not/exist/"}
+
+	var err error
+	output := captureStdout(t, func() {
+		err = AddWorkspace(ws)
+	})
+
+	// Should succeed (warning, not error)
+	if err != nil {
+		t.Fatalf("AddWorkspace returned error: %v", err)
+	}
+
+	// Should contain a warning about the folder
+	if !strings.Contains(output, "Warning") || !strings.Contains(output, "does not exist") {
+		t.Errorf("expected warning about non-existent folder, got:\n%s", output)
+	}
+}
+
 func TestAddWorkspace_MissingGitConfig(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
