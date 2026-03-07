@@ -72,18 +72,16 @@ var addCmd = &cobra.Command{
 		prompt := promptui.Prompt{
 			Label:     "Input was correct",
 			IsConfirm: true,
+			Default:   "y",
 		}
 
-		confirmed, err := prompt.Run()
+		_, err = prompt.Run()
 		if err != nil {
 			fmt.Println(promptui.IconBad + " Canceled adding of a new githooks workspace.")
 			return nil
 		}
 
-		if strings.ToLower(confirmed) == "y" {
-			return hooks.AddWorkspace(&newWorkspace)
-		}
-		return nil
+		return hooks.AddWorkspace(&newWorkspace)
 	},
 }
 

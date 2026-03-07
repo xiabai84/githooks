@@ -113,13 +113,11 @@ var updateCmd = &cobra.Command{
 		confirmPrompt := promptui.Prompt{
 			Label:     "Apply changes",
 			IsConfirm: true,
+			Default:   "y",
 		}
-		confirmed, err := confirmPrompt.Run()
+		_, err = confirmPrompt.Run()
 		if err != nil {
 			fmt.Println("Canceled")
-			return nil
-		}
-		if strings.ToLower(confirmed) != "y" {
 			return nil
 		}
 
