@@ -16,7 +16,7 @@ type CheckResult struct {
 var commitTypes = "feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
 var convRE = regexp.MustCompile(`^(` + commitTypes + `)(\(([^)]*)\))?(!)?: (.+)`)
 
-var branchPrefixes = "feat|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
+var branchPrefixes = "feat|feature|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
 var branchRE = regexp.MustCompile(`^(` + branchPrefixes + `)/(.+)`)
 var exemptBranches = map[string]bool{"main": true, "master": true, "develop": true}
 
@@ -35,6 +35,12 @@ func CheckBranchName(branch, projects string) CheckResult {
 				"  Example: feat/PROJ-123-add-user-auth\n\n"+
 				"  Current branch: %s", strings.Replace(branchPrefixes, "|", ", ", -1), branch),
 		}
+	}
+
+	// Release branches are exempt from ticket requirement
+	m := branchRE.FindStringSubmatch(branch)
+	if m != nil && m[1] == "release" {
+		return CheckResult{Valid: true, Message: branch}
 	}
 
 	ticket := extractTicket(branch, projects)

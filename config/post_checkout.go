@@ -18,17 +18,22 @@ if [[ -z "$CURRENT_BRANCH" || "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" =
   exit 0
 fi
 
-BRANCH_TYPES="feat|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
+BRANCH_TYPES="feat|feature|fix|hotfix|chore|release|bugfix|docs|refactor|test|ci"
 BRANCH_RE="^(${BRANCH_TYPES})/.+"
 
 if ! [[ "$CURRENT_BRANCH" =~ $BRANCH_RE ]]; then
   echo ""
   echo "⚠ WARNING: Branch name does not follow convention: <type>/<TICKET>-<description>"
-  echo "  Allowed types: feat, fix, hotfix, chore, release, bugfix, docs, refactor, test, ci"
+  echo "  Allowed types: feat, feature, fix, hotfix, chore, release, bugfix, docs, refactor, test, ci"
   echo "  Example: feat/PROJ-123-add-user-auth"
   echo ""
   echo "  Current branch: $CURRENT_BRANCH"
   echo ""
+  exit 0
+fi
+
+# Release branches are exempt from ticket requirement
+if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
   exit 0
 fi
 

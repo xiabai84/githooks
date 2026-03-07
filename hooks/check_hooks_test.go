@@ -91,8 +91,11 @@ func TestCheckBranchName_ValidBranch(t *testing.T) {
 		{"test/PROJ-7-add-tests", "PROJ"},
 		{"ci/PROJ-3-pipeline", "PROJ"},
 		{"release/PROJ-200-prep", "PROJ"},
+		{"feature/PROJ-50-long-form", "PROJ"},
 		{"feat/MOB-1-something", "(PROJ|MOB)"},
 		{"feat/ANY-999-something", ""},
+		{"release/2.0.0", "PROJ"},           // release branches exempt from ticket
+		{"release/v1.5.0-rc1", "PROJ"},      // release with version tag
 	}
 	for _, tc := range cases {
 		result := CheckBranchName(tc.branch, tc.projects)
