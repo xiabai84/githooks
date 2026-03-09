@@ -3,6 +3,7 @@ package hooks
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/xiabai84/githooks/buildinfo"
@@ -33,6 +34,11 @@ func InitHooks() (types.GitHookConfig, error) {
 			return ghConfig, fmt.Errorf("setting git config permissions: %w", err)
 		}
 		fmt.Println(promptui.IconGood+"  Created ", config.Default.GitConfigPath)
+	}
+
+	// Ensure global hooksPath is set so hooks apply to all repos
+	if err := ensureGlobalHooksPath(); err != nil {
+		return ghConfig, err
 	}
 
 	_, commitMsgErr := os.Stat(config.Default.CommitMsgPath)
@@ -75,4 +81,30 @@ func InitHooks() (types.GitHookConfig, error) {
 	}
 
 	return ghConfig, nil
+}
+
+// ensureGlobalHooksPath adds [core] hooksPath to ~/.gitconfig if not already present.
+// This makes hooks apply to all git repos, not just repos in configured workspaces.
+func ensureGlobalHooksPath() error {
+	content, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		return fmt.Errorf("reading git config: %w", err)
+	}
+
+	if strings.Contains(string(content), "hooksPath") {
+		return nil
+	}
+
+	hooksPathBlock := "[core]\n    hooksPath = ~/" + config.GitHooksFolder + "\n"
+	newContent := string(content)
+	if len(newContent) > 0 && !strings.HasSuffix(newContent, "\n") {
+		newContent += "\n"
+	}
+	newContent += hooksPathBlock
+
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(newContent), config.ConfigFilePermission); err != nil {
+		return fmt.Errorf("writing git config: %w", err)
+	}
+
+	return nil
 }

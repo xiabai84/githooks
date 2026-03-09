@@ -185,6 +185,80 @@ func TestInitHooks_PostCheckoutContainsBashShebang(t *testing.T) {
 	}
 }
 
+func TestInitHooks_SetsGlobalHooksPath(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("InitHooks returned error: %v", err)
+	}
+
+	content, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	if !strings.Contains(string(content), "hooksPath") {
+		t.Error("expected .gitconfig to contain hooksPath after init")
+	}
+	if !strings.Contains(string(content), config.GitHooksFolder) {
+		t.Errorf("expected .gitconfig to reference %s", config.GitHooksFolder)
+	}
+}
+
+func TestInitHooks_SetsGlobalHooksPath_PreservesExistingContent(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	// Write existing content before init
+	existing := "[user]\n    name = Test User\n"
+	if err := os.WriteFile(config.Default.GitConfigPath, []byte(existing), 0644); err != nil {
+		t.Fatalf("failed to write git config: %v", err)
+	}
+
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("InitHooks returned error: %v", err)
+	}
+
+	content, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "name = Test User") {
+		t.Error("expected existing content to be preserved")
+	}
+	if !strings.Contains(s, "hooksPath") {
+		t.Error("expected hooksPath to be added")
+	}
+}
+
+func TestInitHooks_SetsGlobalHooksPath_Idempotent(t *testing.T) {
+	cleanup := setupTestConfig(t)
+	defer cleanup()
+
+	_, err := InitHooks()
+	if err != nil {
+		t.Fatalf("first InitHooks returned error: %v", err)
+	}
+
+	_, err = InitHooks()
+	if err != nil {
+		t.Fatalf("second InitHooks returned error: %v", err)
+	}
+
+	content, err := os.ReadFile(config.Default.GitConfigPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	// Should only have one hooksPath entry
+	count := strings.Count(string(content), "hooksPath")
+	if count != 1 {
+		t.Errorf("expected exactly 1 hooksPath entry, got %d", count)
+	}
+}
+
 func TestInitHooks_DoesNotOverwriteExistingFiles(t *testing.T) {
 	cleanup := setupTestConfig(t)
 	defer cleanup()
@@ -199,13 +273,13 @@ func TestInitHooks_DoesNotOverwriteExistingFiles(t *testing.T) {
 		t.Fatalf("InitHooks returned error: %v", err)
 	}
 
-	// Existing file should not be overwritten
+	// Existing content should be preserved (hooksPath may be appended)
 	content, err := os.ReadFile(config.Default.GitConfigPath)
 	if err != nil {
 		t.Fatalf("ReadFile returned error: %v", err)
 	}
-	if string(content) != "custom content" {
-		t.Errorf("existing .gitconfig was overwritten, got %q", string(content))
+	if !strings.Contains(string(content), "custom content") {
+		t.Errorf("existing .gitconfig content was lost, got %q", string(content))
 	}
 }
 
